@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+const MAX_POKEMON_ID = 151;
+
 type Pokemon = {
   id: number;
   name: string;
@@ -8,12 +10,10 @@ type Pokemon = {
 
 function App() {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
-  const [startPokemonId, setStartPokemonId] = useState("1");
-  const [endPokemonId, setEndPokemonId] = useState("1");
 
   useEffect(() => {
     const ids = [];
-    for (let i = parseInt(startPokemonId); i <= parseInt(endPokemonId); i++) {
+    for (let i = 1; i <= MAX_POKEMON_ID; i++) {
       ids.push(i);
     }
     Promise.all(
@@ -23,43 +23,21 @@ function App() {
         )
       )
     ).then((pokemons) => setPokemons(pokemons));
-  }, [startPokemonId, endPokemonId]);
-
-  const onChangeStartPokemonId: React.ChangeEventHandler<HTMLInputElement> = (
-    e
-  ) => {
-    setStartPokemonId(e.target.value);
-  };
-
-  const onChangeEndPokemonId: React.ChangeEventHandler<HTMLInputElement> = (
-    e
-  ) => {
-    setEndPokemonId(e.target.value);
-  };
+  }, []);
 
   return (
-    <div>
-      <h1>Gokemon</h1>
-      <input
-        type="number"
-        value={startPokemonId}
-        onChange={onChangeStartPokemonId}
-        min="1"
-        max="151"
-      />
-      <input
-        type="number"
-        value={endPokemonId}
-        onChange={onChangeEndPokemonId}
-        min="1"
-        max="151"
-      />
-      {pokemons.map(({ name, spriteUrl }) => (
-        <div>
-          <h2>{name}</h2>
-          <img src={spriteUrl} />
+    <div className="h-auto bg-gradient-to-br from-blue-500 via-sky-500 to-cyan-500">
+      <h1 className="text-5xl text-red-800">Gokemon</h1>
+      <div className="p-4 w-2/3 mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+          {pokemons.map(({ id, name, spriteUrl }) => (
+            <div className="bg-slate-100 rounded-lg flex flex-col p-1" key={id}>
+              <h2 className="text-center text-2xl">{name}</h2>
+              <img className="brightness-0" src={spriteUrl} />
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }
