@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const MAX_POKEMON_ID = 151;
+const MAX_POKEMON_ID = 898;
 
 type Pokemon = {
   id: number;

@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -32,6 +34,27 @@ func (s *Server) userHandler(c *gin.Context) {
 	c.SecureJSON(http.StatusOK, user)
 }
 
+func (s *Server) getRandomPokemon() models.Pokemon {
+	randomID := rand.Intn(models.MaxPokemonId-1) + 1
+	var pokemon models.Pokemon
+	s.db.First(&pokemon, randomID)
+	return pokemon
+}
+
+func (s *Server) newPokemonLoop() {
+	ticker := time.NewTicker(5000 * time.Millisecond)
+	for {
+		<-ticker.C
+		var users []models.User
+		s.db.Find(&users)
+		for _, user := range users {
+			randomPokemon := s.getRandomPokemon()
+			user.OwnedPokemon = append(user.OwnedPokemon, randomPokemon)
+			s.db.Save(&user)
+		}
+	}
+}
+
 func main() {
 	dsn := "host=localhost user=postgres password=postgres dbname=gokemon"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -43,6 +66,7 @@ func main() {
 	db.AutoMigrate(&models.Pokemon{})
 
 	s := &Server{db}
+	go s.newPokemonLoop()
 
 	r := gin.New()
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
