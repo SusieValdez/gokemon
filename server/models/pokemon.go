@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 const MaxPokemonId = 898
 
@@ -10,4 +12,9 @@ type Pokemon struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	Name      string    `json:"name"`
 	SpriteUrl string    `json:"spriteUrl"`
+	Types     []Type    `json:"types" gorm:"many2many:pokemon_types"`
+}
+
+type Type struct {
+	Name string `json:"name" gorm:"primary_key"`
 }

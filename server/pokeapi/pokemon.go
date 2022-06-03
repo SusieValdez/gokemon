@@ -13,6 +13,11 @@ type Pokemon struct {
 		FrontDefault string `json:"front_default"`
 		FrontShiny   string `json:"front_shiny"`
 	} `json:"sprites"`
+	Types []struct {
+		Type struct {
+			Name string `json:"name"`
+		} `json:"type"`
+	} `json:"types"`
 }
 
 func GetPokemon(id string) (Pokemon, error) {

@@ -22,7 +22,7 @@ type Server struct {
 
 func (s *Server) pokemonHandler(c *gin.Context) {
 	var pokemon []models.Pokemon
-	s.db.Find(&pokemon)
+	s.db.Preload("Types").Find(&pokemon)
 	c.JSON(http.StatusOK, pokemon)
 }
 

@@ -18,8 +18,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect database: %s", err)
 	}
-
+	db.Migrator().DropTable(&models.Pokemon{})
+	db.Migrator().DropTable(&models.Type{})
 	db.AutoMigrate(&models.Pokemon{})
+	db.AutoMigrate(&models.Type{})
 
 	pokeapiChans := []chan pokeapi.Pokemon{}
 
@@ -38,9 +40,17 @@ func main() {
 		}(id)
 	}
 
-	for id := 1; id <= MAX_POKEMON_ID; id++ {
+	for id := uint(1); id <= MAX_POKEMON_ID; id++ {
 		pokeapiPokemon := <-pokeapiChans[id-1]
-		db.Create(&models.Pokemon{Name: pokeapiPokemon.Name, SpriteUrl: pokeapiPokemon.Sprites.FrontDefault})
+		var types []models.Type
+		for _, pokemonType := range pokeapiPokemon.Types {
+			types = append(types, models.Type{Name: pokemonType.Type.Name})
+		}
+		db.Create(&models.Pokemon{
+			Name:      pokeapiPokemon.Name,
+			SpriteUrl: pokeapiPokemon.Sprites.FrontDefault,
+			Types:     types,
+		})
 		fmt.Printf("finished %d\n", id)
 	}
 }
