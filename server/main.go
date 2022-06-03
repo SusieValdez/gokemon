@@ -21,17 +21,16 @@ type Server struct {
 }
 
 func (s *Server) pokemonHandler(c *gin.Context) {
-	id := c.Param("id")
-	var pokemon models.Pokemon
-	s.db.First(&pokemon, id)
-	c.SecureJSON(http.StatusOK, pokemon)
+	var pokemon []models.Pokemon
+	s.db.Find(&pokemon)
+	c.JSON(http.StatusOK, pokemon)
 }
 
 func (s *Server) userHandler(c *gin.Context) {
 	username := c.Param("username")
 	var user models.User
 	s.db.Preload("OwnedPokemon").Preload("Friends").First(&user, "username = ?", username)
-	c.SecureJSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, user)
 }
 
 func (s *Server) getRandomPokemon() models.Pokemon {
@@ -80,7 +79,7 @@ func main() {
 		AllowOrigins: []string{"http://localhost:3000"},
 		AllowMethods: []string{"GET"},
 	}))
-	r.GET("/api/v1/pokemon/:id", s.pokemonHandler)
+	r.GET("/api/v1/pokemon", s.pokemonHandler)
 	r.GET("/api/v1/user/:username", s.userHandler)
 	r.Run(":8080")
 }

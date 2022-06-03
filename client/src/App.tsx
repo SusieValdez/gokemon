@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 
-const MAX_POKEMON_ID = 898;
-
 type Pokemon = {
   id: number;
   name: string;
@@ -28,17 +26,9 @@ function App() {
   const ownsPokemon = (id: number) => ownedPokemonMap[id] !== undefined;
 
   useEffect(() => {
-    const ids = [];
-    for (let i = 1; i <= MAX_POKEMON_ID; i++) {
-      ids.push(i);
-    }
-    Promise.all(
-      ids.map((id) =>
-        fetch(`http://localhost:8080/api/v1/pokemon/${id}`).then((res) =>
-          res.json()
-        )
-      )
-    ).then((pokemons) => setPokemons(pokemons));
+    fetch(`http://localhost:8080/api/v1/pokemon`)
+      .then((res) => res.json())
+      .then((pokemons) => setPokemons(pokemons));
   }, []);
 
   useEffect(() => {
