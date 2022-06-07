@@ -42,7 +42,9 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 text-white">
       <div className="p-4 w-2/3 mx-auto">
-        <h1 className="text-5xl  mb-3">Gokemon</h1>
+        <h1 className="text-5xl  mb-3">
+          Gokemon - ({user?.ownedPokemon.length} / {pokemons.length})
+        </h1>
         {user && <h2 className="text-3xl mb-3">{user.username}'s Pokemon</h2>}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 ">
           {pokemons.length === 0 ? (
@@ -55,7 +57,9 @@ function App() {
               >
                 <h2 className="text-center text-2xl">{name}</h2>
                 <img
-                  className={ownsPokemon(id) ? "" : "brightness-0"}
+                  className={`${
+                    !ownsPokemon(id) && "brightness-0"
+                  } [image-rendering:pixelated]`}
                   src={spriteUrl}
                 />
               </div>
