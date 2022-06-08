@@ -8,10 +8,6 @@ import (
 	"susie.mx/gokemon/models"
 )
 
-type FriendRequestRequest struct {
-	FriendID uint `json:"friendId"`
-}
-
 func (s *Server) GetFriendRequests(c *gin.Context) {
 	session := sessions.Default(c)
 	username := session.Get("username")
@@ -31,6 +27,10 @@ func (s *Server) GetFriendRequests(c *gin.Context) {
 	})
 }
 
+type PostFriendRequestRequest struct {
+	FriendID uint `json:"friendId"`
+}
+
 func (s *Server) PostFriendRequest(c *gin.Context) {
 	session := sessions.Default(c)
 	username := session.Get("username")
@@ -41,7 +41,7 @@ func (s *Server) PostFriendRequest(c *gin.Context) {
 	var user models.User
 	s.DB.First(&user, "username = ?", username)
 
-	var friendRequestRequest FriendRequestRequest
+	var friendRequestRequest PostFriendRequestRequest
 	c.BindJSON(&friendRequestRequest)
 	if user.ID == friendRequestRequest.FriendID {
 		c.JSON(http.StatusBadRequest, nil)
@@ -63,22 +63,30 @@ func (s *Server) PostFriendRequest(c *gin.Context) {
 	})
 }
 
+type DeleteFriendRequestRequest struct {
+	FriendRequestID uint `json:"friendRequestID"`
+}
+
 func (s *Server) DeleteFriendRequest(c *gin.Context) {
+	var friendRequestRequest DeleteFriendRequestRequest
+	c.BindJSON(&friendRequestRequest)
+
 	session := sessions.Default(c)
 	username := session.Get("username")
 	if username == nil {
 		c.JSON(http.StatusUnauthorized, nil)
 		return
 	}
-	var user models.User
-	s.DB.First(&user, "username = ?", username)
+	var loggedInUser models.User
+	s.DB.First(&loggedInUser, "username = ?", username)
 
-	var friendRequestRequest FriendRequestRequest
-	c.BindJSON(&friendRequestRequest)
-	if user.ID == friendRequestRequest.FriendID {
-		c.JSON(http.StatusBadRequest, nil)
+	var friendRequest models.FriendRequest
+	s.DB.First(&friendRequest, "id = ?", friendRequestRequest.FriendRequestID)
+
+	if loggedInUser.ID != friendRequest.UserID && loggedInUser.ID != friendRequest.FriendID {
+		c.JSON(http.StatusUnauthorized, nil)
 		return
 	}
-	var friendRequest models.FriendRequest
-	s.DB.Delete(&friendRequest, "user_id = ? AND friend_id = ?", user.ID, friendRequestRequest.FriendID)
+
+	s.DB.Delete(&models.FriendRequest{}, friendRequestRequest.FriendRequestID)
 }

@@ -45,21 +45,21 @@ function UserPage({ user, loggedInUser }: UserProps) {
     }).then(() => window.location.reload());
   };
 
-  const onClickCancelFriendRequest = () => {
+  const onClickCancelFriendRequest = (id: number) => {
     fetch(`http://localhost:8080/api/v1/friendRequests`, {
       method: "DELETE",
       credentials: "include",
       body: JSON.stringify({
-        friendId: user.id,
+        friendRequestId: id,
       }),
     }).then(() => window.location.reload());
   };
 
-  const canSeeFriendRequestButton = loggedInUser && loggedInUser.id !== user.id;
+  const canSeeFriendRequestButton = user.id !== loggedInUser?.id;
 
-  const userHasFriendRequestFromLoggedInUser =
-    loggedInUser &&
-    friendRequests.sent.some(({ user: { id } }) => id === loggedInUser.id);
+  const friendRequestFromLoggedInUser = friendRequests.sent.find(
+    ({ user: { id } }) => id === loggedInUser?.id
+  );
 
   return (
     <div>
@@ -70,10 +70,12 @@ function UserPage({ user, loggedInUser }: UserProps) {
           {pokemons.length})
         </h2>
         {canSeeFriendRequestButton &&
-          (userHasFriendRequestFromLoggedInUser ? (
+          (friendRequestFromLoggedInUser ? (
             <button
               className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
-              onClick={onClickCancelFriendRequest}
+              onClick={() =>
+                onClickCancelFriendRequest(friendRequestFromLoggedInUser.id)
+              }
             >
               Cancel Friend Request
             </button>
