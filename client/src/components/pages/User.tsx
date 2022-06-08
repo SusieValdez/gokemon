@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Pokemon, User } from "../../models";
+import { FriendRequest, Pokemon, User } from "../../models";
 
 type UserProps = {
+  loggedInUser?: User;
   user: User;
 };
 
-function UserPage({ user }: UserProps) {
+function UserPage({ user, loggedInUser }: UserProps) {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const ownedPokemonMap = (user.ownedPokemon ?? []).reduce(
     (acc, pokemon) => ({
@@ -16,18 +17,77 @@ function UserPage({ user }: UserProps) {
   );
   const ownsPokemon = (id: number) => ownedPokemonMap[id] !== undefined;
 
+  const [friendRequests, setFriendRequests] = useState<{
+    sent: FriendRequest[];
+    recieved: FriendRequest[];
+  }>({ sent: [], recieved: [] });
+
   useEffect(() => {
     fetch(`http://localhost:8080/api/v1/pokemon`)
       .then((res) => res.json())
       .then((pokemons) => setPokemons(pokemons));
+    fetch(`http://localhost:8080/api/v1/friendRequests`, {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((friendRequests) => setFriendRequests(friendRequests));
   }, []);
+
+  const onClickSendFriendRequest = () => {
+    fetch(`http://localhost:8080/api/v1/friendRequests`, {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({
+        friendId: user.id,
+      }),
+    }).then(() => window.location.reload());
+  };
+
+  const onClickCancelFriendRequest = () => {
+    fetch(`http://localhost:8080/api/v1/friendRequests`, {
+      method: "DELETE",
+      credentials: "include",
+      body: JSON.stringify({
+        friendId: user.id,
+      }),
+    }).then(() => window.location.reload());
+  };
 
   return (
     <div>
-      <h2 className="text-3xl mb-3">
-        {user.username}'s Pokemon - ({user.ownedPokemon.length} /{" "}
-        {pokemons.length})
-      </h2>
+      <div className="flex justify-between mb-3">
+        <h2 className="text-3xl ">
+          {user.username}'s Pokemon - ({user.ownedPokemon.length} /{" "}
+          {pokemons.length})
+        </h2>
+        {loggedInUser &&
+        friendRequests.sent.some(
+          ({ user: { id } }) => id === loggedInUser.id
+        ) ? (
+          <button
+            className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
+            onClick={onClickCancelFriendRequest}
+          >
+            Cancel Friend Request
+          </button>
+        ) : (
+          <button
+            className="bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
+            onClick={onClickSendFriendRequest}
+          >
+            Send friend request
+          </button>
+        )}
+      </div>
+
+      <div>
+        {friendRequests.recieved.map(({ id, user, friend }) => (
+          <p key={id}>
+            {user.username} {"->"} {friend.username}
+          </p>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 ">
         {pokemons.length === 0 ? (
           <div>loading...</div>

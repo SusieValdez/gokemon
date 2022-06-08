@@ -11,16 +11,13 @@ export type User = {
   friends: User[];
 };
 
-export type UserSession =
-  | {
-      user: User;
-      loggedIn: true;
-    }
-  | {
-      user: User;
-      loggedIn: false;
-    }
-  | {
-      user: undefined;
-      loggedIn: false;
-    };
+export type UserSession = {
+  loggedInUser?: User;
+  user?: User;
+};
+
+export type FriendRequest = {
+  id: number;
+  user: User;
+  friend: User;
+};

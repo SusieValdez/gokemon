@@ -20,10 +20,13 @@ function App() {
     <div className="min-h-screen bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 text-white">
       {userSession ? (
         <div>
-          <Navbar userSession={userSession} />
+          <Navbar loggedInUser={userSession.loggedInUser} />
           <div className="p-4 mx-auto">
             {userSession.user ? (
-              <UserPage user={userSession.user} />
+              <UserPage
+                loggedInUser={userSession.loggedInUser}
+                user={userSession.user}
+              />
             ) : (
               <HomePage />
             )}

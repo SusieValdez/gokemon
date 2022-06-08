@@ -68,23 +68,107 @@ func (s *Server) logout(c *gin.Context) {
 }
 
 func (s *Server) userHandler(c *gin.Context) {
-	username := c.Param("username")
 	session := sessions.Default(c)
-	if username == "" {
-		username, _ = session.Get("username").(string)
+	loggedInUsername := session.Get("username")
+	username := c.Param("username")
+
+	obj := gin.H{
+		"loggedInUser": nil,
+		"user":         nil,
 	}
+
+	var loggedInUser models.User
+	if loggedInUsername != "" {
+		s.db.Preload("OwnedPokemon").Preload("Friends").First(&loggedInUser, "username = ?", loggedInUsername)
+	}
+	if loggedInUser.ID != 0 {
+		obj["loggedInUser"] = loggedInUser
+	}
+
 	var user models.User
 	if username != "" {
 		s.db.Preload("OwnedPokemon").Preload("Friends").First(&user, "username = ?", username)
 	}
-	obj := gin.H{
-		"user":     nil,
-		"loggedIn": session.Get("accessToken") != nil,
-	}
 	if user.ID != 0 {
 		obj["user"] = user
 	}
+
 	c.JSON(http.StatusOK, obj)
+}
+
+func (s *Server) friendRequestsHandler(c *gin.Context) {
+	session := sessions.Default(c)
+	username := session.Get("username")
+	if username == nil {
+		c.JSON(http.StatusUnauthorized, nil)
+		return
+	}
+	var user models.User
+	s.db.First(&user, "username = ?", username)
+	sentFriendRequests := []models.FriendRequest{}
+	s.db.Preload("User").Preload("Friend").Find(&sentFriendRequests, "user_id = ?", user.ID)
+	recievedFriendRequests := []models.FriendRequest{}
+	s.db.Preload("User").Preload("Friend").Find(&recievedFriendRequests, "friend_id = ?", user.ID)
+	c.JSON(http.StatusOK, gin.H{
+		"sent":     sentFriendRequests,
+		"recieved": recievedFriendRequests,
+	})
+}
+
+type FriendRequestRequest struct {
+	FriendID uint `json:"friendId"`
+}
+
+func (s *Server) newFriendRequestHandler(c *gin.Context) {
+	session := sessions.Default(c)
+	username := session.Get("username")
+	if username == nil {
+		c.JSON(http.StatusUnauthorized, nil)
+		return
+	}
+	var user models.User
+	s.db.First(&user, "username = ?", username)
+
+	var friendRequestRequest FriendRequestRequest
+	c.BindJSON(&friendRequestRequest)
+	if user.ID == friendRequestRequest.FriendID {
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+	var friendRequest models.FriendRequest
+	s.db.First(&friendRequest, "user_id = ? AND friend_id = ?", user.ID, friendRequestRequest.FriendID)
+
+	if friendRequest.ID != 0 {
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+	var friend models.User
+	s.db.First(&friend, friendRequestRequest.FriendID)
+
+	s.db.Create(&models.FriendRequest{
+		User:   user,
+		Friend: friend,
+	})
+}
+
+func (s *Server) cancelFriendRequest(c *gin.Context) {
+	session := sessions.Default(c)
+	username := session.Get("username")
+	if username == nil {
+		c.JSON(http.StatusUnauthorized, nil)
+		return
+	}
+	var user models.User
+	s.db.First(&user, "username = ?", username)
+
+	var friendRequestRequest FriendRequestRequest
+	c.BindJSON(&friendRequestRequest)
+	if user.ID == friendRequestRequest.FriendID {
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+	var friendRequest models.FriendRequest
+	s.db.Delete(&friendRequest, "user_id = ? AND friend_id = ?", user.ID, friendRequestRequest.FriendID)
 }
 
 func (s *Server) getRandomPokemon() models.Pokemon {
@@ -138,6 +222,7 @@ func main() {
 
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Pokemon{})
+	db.AutoMigrate(&models.FriendRequest{})
 
 	s := &Server{db: db, discordClient: &discordClient}
 	go s.newPokemonLoop()
@@ -156,13 +241,20 @@ func main() {
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
-		AllowMethods:     []string{"GET"},
+		AllowMethods:     []string{"GET", "POST", "DELETE"},
 		AllowCredentials: true,
 	}))
 	r.GET("/api/v1/pokemon", s.pokemonHandler)
+
 	r.GET("/api/v1/auth/discord/redirect", s.discordLogin)
 	r.GET("/api/v1/auth/logout", s.logout)
+
 	r.GET("/api/v1/user/:username", s.userHandler)
 	r.GET("/api/v1/user/", s.userHandler)
+
+	r.GET("/api/v1/friendRequests", s.friendRequestsHandler)
+	r.POST("/api/v1/friendRequests", s.newFriendRequestHandler)
+	r.DELETE("/api/v1/friendRequests", s.cancelFriendRequest)
+
 	r.Run(":8080")
 }
