@@ -41,10 +41,11 @@ func (s *Server) discordLogin(c *gin.Context) {
 	s.db.Preload("OwnedPokemon").Preload("Friends").First(&user, "discord_id = ?", discordUser.ID)
 	if user.ID == 0 {
 		s.db.Create(&models.User{
-			DiscordID:    discordUser.ID,
-			Username:     username,
-			Friends:      nil,
-			OwnedPokemon: nil,
+			DiscordID:         discordUser.ID,
+			Username:          username,
+			ProfilePictureURL: fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", discordUser.ID, discordUser.Avatar),
+			Friends:           []*models.User{},
+			OwnedPokemon:      []models.Pokemon{},
 		})
 	} else {
 		username = user.Username

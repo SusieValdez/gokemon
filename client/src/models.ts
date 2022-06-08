@@ -7,6 +7,7 @@ export type Pokemon = {
 export type User = {
   id: number;
   username: string;
+  profilePictureUrl: string;
   ownedPokemon: Pokemon[];
   friends: User[];
 };

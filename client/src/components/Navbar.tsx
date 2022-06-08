@@ -63,6 +63,7 @@ const Navbar = ({ loggedInUser }: NavbarProps) => {
                 >
                   Profile
                 </a>
+                <img src={loggedInUser.profilePictureUrl} className="w-5 h-5" />
               </li>
             )}
             <li>

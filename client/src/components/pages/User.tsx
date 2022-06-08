@@ -56,6 +56,7 @@ function UserPage({ user, loggedInUser }: UserProps) {
   return (
     <div>
       <div className="flex justify-between mb-3">
+        <img src={user.profilePictureUrl} className="w-8 h-8 rounded-full" />
         <h2 className="text-3xl ">
           {user.username}'s Pokemon - ({user.ownedPokemon.length} /{" "}
           {pokemons.length})

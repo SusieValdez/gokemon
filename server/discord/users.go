@@ -9,7 +9,8 @@ import (
 
 type User struct {
 	ID       string `json:"id"`
-	Username string `json:"username" gorm:"unique;not null"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
 }
 
 func (c *Client) GetUser(userID string, accessToken string) User {
