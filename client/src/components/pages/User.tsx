@@ -55,6 +55,12 @@ function UserPage({ user, loggedInUser }: UserProps) {
     }).then(() => window.location.reload());
   };
 
+  const canSeeFriendRequestButton = loggedInUser && loggedInUser.id !== user.id;
+
+  const userHasFriendRequestFromLoggedInUser =
+    loggedInUser &&
+    friendRequests.sent.some(({ user: { id } }) => id === loggedInUser.id);
+
   return (
     <div>
       <div className="flex justify-between mb-3">
@@ -63,10 +69,8 @@ function UserPage({ user, loggedInUser }: UserProps) {
           {user.username}'s Pokemon - ({user.ownedPokemon.length} /{" "}
           {pokemons.length})
         </h2>
-        {loggedInUser &&
-          (friendRequests.sent.some(
-            ({ user: { id } }) => id === loggedInUser.id
-          ) ? (
+        {canSeeFriendRequestButton &&
+          (userHasFriendRequestFromLoggedInUser ? (
             <button
               className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
               onClick={onClickCancelFriendRequest}
