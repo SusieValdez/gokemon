@@ -26,11 +26,13 @@ function UserPage({ user, loggedInUser }: UserProps) {
     fetch(`http://localhost:8080/api/v1/pokemon`)
       .then((res) => res.json())
       .then((pokemons) => setPokemons(pokemons));
-    fetch(`http://localhost:8080/api/v1/friendRequests`, {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((friendRequests) => setFriendRequests(friendRequests));
+    if (loggedInUser) {
+      fetch(`http://localhost:8080/api/v1/friendRequests`, {
+        credentials: "include",
+      })
+        .then((res) => res.json())
+        .then((friendRequests) => setFriendRequests(friendRequests));
+    }
   }, []);
 
   const onClickSendFriendRequest = () => {
@@ -62,23 +64,23 @@ function UserPage({ user, loggedInUser }: UserProps) {
           {pokemons.length})
         </h2>
         {loggedInUser &&
-        friendRequests.sent.some(
-          ({ user: { id } }) => id === loggedInUser.id
-        ) ? (
-          <button
-            className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
-            onClick={onClickCancelFriendRequest}
-          >
-            Cancel Friend Request
-          </button>
-        ) : (
-          <button
-            className="bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
-            onClick={onClickSendFriendRequest}
-          >
-            Send friend request
-          </button>
-        )}
+          (friendRequests.sent.some(
+            ({ user: { id } }) => id === loggedInUser.id
+          ) ? (
+            <button
+              className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
+              onClick={onClickCancelFriendRequest}
+            >
+              Cancel Friend Request
+            </button>
+          ) : (
+            <button
+              className="bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
+              onClick={onClickSendFriendRequest}
+            >
+              Send friend request
+            </button>
+          ))}
       </div>
 
       <div>
