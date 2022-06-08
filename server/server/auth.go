@@ -35,7 +35,7 @@ func (s *Server) DiscordLogin(c *gin.Context) {
 	if err != nil {
 		log.Fatalf("saving access token to session failed: %s", err)
 	}
-	c.Redirect(http.StatusFound, fmt.Sprintf("http://localhost:3000/%s", username))
+	c.Redirect(http.StatusFound, fmt.Sprintf("%s/%s", s.ClientBaseURL, username))
 }
 
 func (s *Server) Logout(c *gin.Context) {
@@ -43,5 +43,5 @@ func (s *Server) Logout(c *gin.Context) {
 	session.Delete("accessToken")
 	session.Delete("username")
 	session.Save()
-	c.Redirect(http.StatusFound, "http://localhost:3000")
+	c.Redirect(http.StatusFound, s.ClientBaseURL)
 }

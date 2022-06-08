@@ -8,4 +8,5 @@ import (
 type Server struct {
 	DB            *gorm.DB
 	DiscordClient *discord.Client
+	ClientBaseURL string
 }

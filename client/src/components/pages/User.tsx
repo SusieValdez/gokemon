@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import {
+  deleteFriendRequest,
+  getFriendRequests,
+  postFriendRequest,
+} from "../../api/friendRequests";
+import { getPokemons } from "../../api/pokemon";
 import { FriendRequest, Pokemon, User } from "../../models";
 
 type UserProps = {
@@ -23,36 +29,20 @@ function UserPage({ user, loggedInUser }: UserProps) {
   }>({ sent: [], recieved: [] });
 
   useEffect(() => {
-    fetch(`http://localhost:8080/api/v1/pokemon`)
-      .then((res) => res.json())
-      .then((pokemons) => setPokemons(pokemons));
+    getPokemons().then((pokemons) => setPokemons(pokemons));
     if (loggedInUser) {
-      fetch(`http://localhost:8080/api/v1/friendRequests`, {
-        credentials: "include",
-      })
-        .then((res) => res.json())
-        .then((friendRequests) => setFriendRequests(friendRequests));
+      getFriendRequests().then((friendRequests) =>
+        setFriendRequests(friendRequests)
+      );
     }
   }, []);
 
   const onClickSendFriendRequest = () => {
-    fetch(`http://localhost:8080/api/v1/friendRequests`, {
-      method: "POST",
-      credentials: "include",
-      body: JSON.stringify({
-        friendId: user.id,
-      }),
-    }).then(() => window.location.reload());
+    postFriendRequest(user.id).then(() => window.location.reload());
   };
 
   const onClickCancelFriendRequest = (id: number) => {
-    fetch(`http://localhost:8080/api/v1/friendRequests`, {
-      method: "DELETE",
-      credentials: "include",
-      body: JSON.stringify({
-        friendRequestId: id,
-      }),
-    }).then(() => window.location.reload());
+    deleteFriendRequest(id).then(() => window.location.reload());
   };
 
   const canSeeFriendRequestButton = user.id !== loggedInUser?.id;

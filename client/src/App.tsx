@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getUser } from "./api/users";
 import Navbar from "./components/Navbar";
 import HomePage from "./components/pages/Home";
 import UserPage from "./components/pages/User";
@@ -9,11 +10,7 @@ function App() {
 
   useEffect(() => {
     const userId = location.pathname.slice(1);
-    fetch(`http://localhost:8080/api/v1/user/${userId}`, {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((userSession) => setUserSession(userSession));
+    getUser(userId).then((userSession) => setUserSession(userSession));
   }, []);
 
   return (

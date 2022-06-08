@@ -1,3 +1,4 @@
+import { DISCORD_LOGIN_URL, LOGOUT_URL, userPageUrl } from "../api/links";
 import Pokeball from "../assets/pokeball.png";
 import { User, UserSession } from "../models";
 
@@ -57,7 +58,7 @@ const Navbar = ({ loggedInUser }: NavbarProps) => {
             {loggedInUser && (
               <li>
                 <a
-                  href={`/${loggedInUser.username}`}
+                  href={userPageUrl(loggedInUser.username)}
                   className="block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
                   aria-current="page"
                 >
@@ -69,7 +70,7 @@ const Navbar = ({ loggedInUser }: NavbarProps) => {
             <li>
               {loggedInUser ? (
                 <a
-                  href="http://localhost:8080/api/v1/auth/logout"
+                  href={LOGOUT_URL}
                   className="block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
                   aria-current="page"
                 >
@@ -77,7 +78,7 @@ const Navbar = ({ loggedInUser }: NavbarProps) => {
                 </a>
               ) : (
                 <a
-                  href="https://discord.com/api/oauth2/authorize?client_id=982805739015901244&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fapi%2Fv1%2Fauth%2Fdiscord%2Fredirect&response_type=code&scope=identify"
+                  href={DISCORD_LOGIN_URL}
                   className="block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
                   aria-current="page"
                 >

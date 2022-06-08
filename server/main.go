@@ -35,6 +35,8 @@ func main() {
 
 	sessionStoreAuthKey := os.Getenv("SESSION_STORE_AUTH_KEY")
 
+	clientBaseURL := os.Getenv("CLIENT_BASE_URL")
+
 	dsn := fmt.Sprintf("host=localhost user=%s password=%s dbname=gokemon", pgUsername, pgPassword)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -52,7 +54,11 @@ func main() {
 	db.AutoMigrate(&models.Pokemon{})
 	db.AutoMigrate(&models.FriendRequest{})
 
-	s := &server.Server{DB: db, DiscordClient: &discordClient}
+	s := &server.Server{
+		DB:            db,
+		DiscordClient: &discordClient,
+		ClientBaseURL: clientBaseURL,
+	}
 	go s.NewPokemonLoop()
 
 	store := cookie.NewStore([]byte(sessionStoreAuthKey))
@@ -68,7 +74,7 @@ func main() {
 	}))
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{clientBaseURL},
 		AllowMethods:     []string{"GET", "POST", "DELETE"},
 		AllowCredentials: true,
 	}))
