@@ -4,7 +4,9 @@ import {
   getFriendRequests,
   postFriendRequest,
 } from "../../api/friendRequests";
+import { userPageUrl } from "../../api/links";
 import { getPokemons } from "../../api/pokemon";
+import { deleteFriendship, postFriendship } from "../../api/users";
 import { FriendRequest, Pokemon, User } from "../../models";
 
 type UserProps = {
@@ -45,11 +47,27 @@ function UserPage({ user, loggedInUser }: UserProps) {
     deleteFriendRequest(id).then(() => window.location.reload());
   };
 
+  const onClickAcceptFriendRequest = async (id: number) => {
+    await postFriendship(id);
+    await deleteFriendRequest(id);
+    window.location.reload();
+  };
+
+  const onClickDenyFriendRequest = (id: number) => {
+    deleteFriendRequest(id).then(() => window.location.reload());
+  };
+
+  const onClickRemoveFriend = (friendId: number) => {
+    deleteFriendship(friendId).then(() => window.location.reload());
+  };
+
   const canSeeFriendRequestButton = user.id !== loggedInUser?.id;
 
   const friendRequestFromLoggedInUser = friendRequests.sent.find(
     ({ user: { id } }) => id === loggedInUser?.id
   );
+
+  const friend = loggedInUser?.friends.find(({ id }) => id === user.id);
 
   return (
     <div>
@@ -60,7 +78,14 @@ function UserPage({ user, loggedInUser }: UserProps) {
           {pokemons.length})
         </h2>
         {canSeeFriendRequestButton &&
-          (friendRequestFromLoggedInUser ? (
+          (friend ? (
+            <button
+              className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
+              onClick={() => onClickRemoveFriend(friend.id)}
+            >
+              Remove Friend
+            </button>
+          ) : friendRequestFromLoggedInUser ? (
             <button
               className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
               onClick={() =>
@@ -81,8 +106,33 @@ function UserPage({ user, loggedInUser }: UserProps) {
 
       <div>
         {friendRequests.recieved.map(({ id, user, friend }) => (
-          <p key={id}>
-            {user.username} {"->"} {friend.username}
+          <div key={id} className="flex justify-between w-fit">
+            <p>
+              {user.username} {"->"} {friend.username}
+            </p>
+            <button
+              className="px-2 hover:brightness-75 hover:-translate-y-1"
+              onClick={() => onClickAcceptFriendRequest(id)}
+            >
+              ✅
+            </button>
+            <button
+              className="px-2 hover:brightness-75 hover:-translate-y-1"
+              onClick={() => onClickDenyFriendRequest(id)}
+            >
+              ❌
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        {user.friends.map(({ username, profilePictureUrl }) => (
+          <p>
+            <a href={userPageUrl(username)}>
+              <img src={profilePictureUrl} />
+              {username}
+            </a>
           </p>
         ))}
       </div>

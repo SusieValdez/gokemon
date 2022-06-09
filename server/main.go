@@ -86,6 +86,9 @@ func main() {
 	r.GET("/api/v1/user/", s.GetUser)
 	r.GET("/api/v1/user/:username", s.GetUser)
 
+	r.POST("api/v1/friendships", s.PostFriendship)
+	r.DELETE("api/v1/friendships", s.DeleteFriendship)
+
 	r.GET("/api/v1/friendRequests", s.GetFriendRequests)
 	r.POST("/api/v1/friendRequests", s.PostFriendRequest)
 	r.DELETE("/api/v1/friendRequests", s.DeleteFriendRequest)

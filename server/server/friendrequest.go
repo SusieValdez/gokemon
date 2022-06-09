@@ -61,6 +61,7 @@ func (s *Server) PostFriendRequest(c *gin.Context) {
 		User:   user,
 		Friend: friend,
 	})
+	c.JSON(http.StatusOK, "ok")
 }
 
 type DeleteFriendRequestRequest struct {
@@ -89,4 +90,5 @@ func (s *Server) DeleteFriendRequest(c *gin.Context) {
 	}
 
 	s.DB.Delete(&models.FriendRequest{}, friendRequestRequest.FriendRequestID)
+	c.JSON(http.StatusOK, "ok")
 }

@@ -12,7 +12,7 @@ export const postFriendRequest = (friendId: number) =>
     body: JSON.stringify({
       friendId,
     }),
-  });
+  }).then((res) => res.json());
 
 export const deleteFriendRequest = (id: number) =>
   fetch(`${SERVER_BASE_URL}/api/v1/friendRequests`, {
@@ -21,4 +21,4 @@ export const deleteFriendRequest = (id: number) =>
     body: JSON.stringify({
       friendRequestId: id,
     }),
-  });
+  }).then((res) => res.json());
