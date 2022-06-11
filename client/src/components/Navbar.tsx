@@ -1,92 +1,272 @@
 import { DISCORD_LOGIN_URL, LOGOUT_URL, userPageUrl } from "../api/links";
 import Pokeball from "../assets/pokeball.png";
-import { User, UserSession } from "../models";
+import NotificationIcon from "../assets/bell-solid.svg";
+import FriendListIcon from "../assets/user-group-solid.svg";
+import { FriendRequest, User } from "../models";
+import { useEffect, useRef, useState } from "react";
+import { useElementClientRect } from "../hooks/useElementClientRect";
+import {
+  useOnClickOutsideElement,
+  useOnClickOutsideElements,
+} from "../hooks/useOnClickOutsideElement";
+import { deleteFriendRequest, getFriendRequests } from "../api/friendRequests";
+import { postFriendship } from "../api/users";
 
 type NavbarProps = {
   loggedInUser?: User;
+  recievedFriendRequests: FriendRequest[];
 };
 
-const Navbar = ({ loggedInUser }: NavbarProps) => {
+type MenuType = "user" | "friends" | "notifications";
+
+const Navbar = ({ loggedInUser, recievedFriendRequests }: NavbarProps) => {
+  const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
+  const userMenu = useRef<HTMLDivElement>(null);
+  const userMenuRect = useElementClientRect(userMenu);
+
+  const notificationsMenu = useRef<HTMLDivElement>(null);
+  const notificationsMenuRect = useElementClientRect(notificationsMenu);
+
+  const friendsMenu = useRef<HTMLDivElement>(null);
+  const friendsMenuRect = useElementClientRect(friendsMenu);
+
+  useOnClickOutsideElements([userMenu, notificationsMenu, friendsMenu], () => {
+    setOpenMenu(undefined);
+  });
+
+  const onClickAcceptFriendRequest = async (id: number) => {
+    await postFriendship(id);
+    await deleteFriendRequest(id);
+    window.location.reload();
+  };
+
+  const onClickDenyFriendRequest = (id: number) => {
+    deleteFriendRequest(id).then(() => window.location.reload());
+  };
+
   return (
     <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-800">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
         <a href="/" className="flex items-center">
-          <img className="w-7 h-7 mx-3" src={Pokeball} />
+          <img src={Pokeball} className="mr-3 h-6 sm:h-9" alt="Logo" />
           <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
             Gokemon
           </span>
         </a>
-        <div className="flex md:order-2">
-          <button
-            type="button"
-            data-collapse-toggle="mobile-menu-3"
-            aria-controls="mobile-menu-3"
-            aria-expanded="false"
-            className="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 mr-1"
-          ></button>
-          <div className="hidden relative md:block">
-            <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none"></div>
-            <input
-              type="text"
-              id="search-navbar"
-              className="block p-2 pl-10 w-full text-gray-900 bg-gray-50 rounded-lg border border-gray-300 sm:text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Search..."
-            />
-          </div>
-          <button
-            data-collapse-toggle="mobile-menu-3"
-            type="button"
-            className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-            aria-controls="mobile-menu-3"
-            aria-expanded="false"
-          ></button>
-        </div>
-        <div
-          className="hidden justify-between items-center w-full md:flex md:w-auto md:order-1"
-          id="mobile-menu-3"
-        >
-          <div className="relative mt-3 md:hidden">
-            <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none"></div>
-            <input
-              type="text"
-              id="search-navbar"
-              className="block p-2 pl-10 w-full text-gray-900 bg-gray-50 rounded-lg border border-gray-300 sm:text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Search..."
-            />
-          </div>
-          <ul className="flex flex-col mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
-            {loggedInUser && (
-              <li>
-                <a
-                  href={userPageUrl(loggedInUser.username)}
-                  className="block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
-                  aria-current="page"
+        <div className="flex">
+          {loggedInUser ? (
+            <>
+              <span ref={friendsMenu} className="mr-2">
+                <button
+                  type="button"
+                  className={`flex mr-5 text-sm outline-none ${
+                    openMenu === "friends" ? "brightness-75" : "brightness-100"
+                  }`}
+                  id="friends-menu-button"
+                  aria-expanded={openMenu === "friends"}
+                  data-dropdown-toggle="dropdown"
+                  onClick={() =>
+                    setOpenMenu(openMenu === "friends" ? undefined : "friends")
+                  }
                 >
-                  Profile
-                </a>
-                <img src={loggedInUser.profilePictureUrl} className="w-5 h-5" />
-              </li>
-            )}
-            <li>
-              {loggedInUser ? (
-                <a
-                  href={LOGOUT_URL}
-                  className="block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
-                  aria-current="page"
+                  <span className="sr-only">Open friends menu</span>
+                  <img
+                    className="w-8 h-8"
+                    style={{ filter: "invert(100%)" }}
+                    src={FriendListIcon}
+                    alt="notification icon"
+                  />
+                </button>
+
+                {openMenu === "friends" && (
+                  <div
+                    className="z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    style={{
+                      position: "absolute",
+                      inset: "0px auto auto 0px",
+                      margin: "0px",
+                      transform: `translate3d(${friendsMenuRect.x - 100}px, ${
+                        friendsMenuRect.y + friendsMenuRect.height + 20
+                      }px, 0px)`,
+                    }}
+                    id="dropdown"
+                  >
+                    <div className="py-3 px-4">
+                      <span className="block text-sm text-gray-900 dark:text-white">
+                        Friends
+                      </span>
+                    </div>
+                    {loggedInUser.friends.length > 0 ? (
+                      <ul className="py-1" aria-labelledby="dropdown">
+                        {loggedInUser.friends.map(
+                          ({ id, username, profilePictureUrl }) => (
+                            <li key={id}>
+                              <a
+                                href={userPageUrl(username)}
+                                className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                              >
+                                <img
+                                  src={profilePictureUrl}
+                                  className="w-8 h-8 inline mr-2 rounded-full"
+                                />
+                                {username}
+                              </a>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    ) : (
+                      <div className="py-2 px-4 w-44 text-center">
+                        This is awkward but... you have no friends 😅
+                      </div>
+                    )}
+                  </div>
+                )}
+              </span>
+              <span ref={notificationsMenu} className="mr-2">
+                {recievedFriendRequests.length > 0 && (
+                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
+                )}
+                <button
+                  type="button"
+                  className={`flex mr-5 text-sm outline-none ${
+                    openMenu === "notifications"
+                      ? "brightness-75"
+                      : "brightness-100"
+                  }`}
+                  id="notifications-menu-button"
+                  aria-expanded={openMenu === "notifications"}
+                  data-dropdown-toggle="dropdown"
+                  onClick={() =>
+                    setOpenMenu(
+                      openMenu === "notifications" ? undefined : "notifications"
+                    )
+                  }
                 >
-                  Logout
-                </a>
-              ) : (
-                <a
-                  href={DISCORD_LOGIN_URL}
-                  className="block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
-                  aria-current="page"
+                  <span className="sr-only">Open notifications menu</span>
+                  <img
+                    className="w-8 h-8 rounded-full"
+                    style={{ filter: "invert(100%)" }}
+                    src={NotificationIcon}
+                    alt="notification icon"
+                  />
+                </button>
+
+                {openMenu === "notifications" && (
+                  <div
+                    className="z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    style={{
+                      position: "absolute",
+                      inset: "0px auto auto 0px",
+                      margin: "0px",
+                      transform: `translate3d(${
+                        notificationsMenuRect.x - 120
+                      }px, ${
+                        notificationsMenuRect.y +
+                        notificationsMenuRect.height +
+                        20
+                      }px, 0px)`,
+                    }}
+                    id="dropdown"
+                  >
+                    <div className="py-3 px-4">
+                      <span className="block text-sm text-gray-900 dark:text-white">
+                        Notifications
+                      </span>
+                    </div>
+                    {recievedFriendRequests.length > 0 ? (
+                      <ul className="py-1" aria-labelledby="dropdown">
+                        {recievedFriendRequests.map(({ id, user }) => (
+                          <li
+                            key={id}
+                            className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                          >
+                            <p>{user.username} added you!</p>
+                            <button
+                              className="px-2 hover:brightness-75 hover:-translate-y-1"
+                              onClick={() => onClickAcceptFriendRequest(id)}
+                            >
+                              ✅
+                            </button>
+                            <button
+                              className="px-2 hover:brightness-75 hover:-translate-y-1"
+                              onClick={() => onClickDenyFriendRequest(id)}
+                            >
+                              ❌
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="py-2 px-4 w-44 text-center">
+                        You have no new notifications...
+                      </div>
+                    )}
+                  </div>
+                )}
+              </span>
+              <span ref={userMenu} className="mr-2">
+                <button
+                  type="button"
+                  className="flex mr-3 text-sm rounded-full md:mr-0 outline-none"
+                  id="user-menu-button"
+                  aria-expanded={openMenu === "user"}
+                  data-dropdown-toggle="dropdown"
+                  onClick={() =>
+                    setOpenMenu(openMenu === "user" ? undefined : "user")
+                  }
                 >
-                  Login
-                </a>
-              )}
-            </li>
-          </ul>
+                  <span className="sr-only">Open user menu</span>
+                  <img
+                    className="w-8 h-8 rounded-full"
+                    src={loggedInUser.profilePictureUrl}
+                    alt="user photo"
+                  />
+                </button>
+
+                {openMenu === "user" && (
+                  <div
+                    className="z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    style={{
+                      position: "absolute",
+                      inset: "0px auto auto 0px",
+                      margin: "0px",
+                      transform: `translate3d(${userMenuRect.x - 60}px, ${
+                        userMenuRect.y + userMenuRect.height + 20
+                      }px, 0px)`,
+                    }}
+                    id="dropdown"
+                  >
+                    <div className="py-3 px-4">
+                      <span className="block text-sm text-gray-900 dark:text-white">
+                        {loggedInUser.username}
+                      </span>
+                    </div>
+                    <ul className="py-1" aria-labelledby="dropdown">
+                      <li>
+                        <a
+                          href={userPageUrl(loggedInUser.username)}
+                          className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                        >
+                          Profile
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={LOGOUT_URL}
+                          className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                        >
+                          Sign out
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </span>
+            </>
+          ) : (
+            <a href={DISCORD_LOGIN_URL}>Log In</a>
+          )}
         </div>
       </div>
     </nav>
