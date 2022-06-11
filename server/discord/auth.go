@@ -2,6 +2,7 @@ package discord
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -35,8 +36,15 @@ func (c *Client) GetAccessToken(code string) AccessTokenResponse {
 	if err != nil {
 		log.Fatalf("requesting access token failed: %s", err)
 	}
+	bs, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("reading response bytes failed: %s", err)
+	}
+	if resp.StatusCode != 200 {
+		log.Fatalf("requesting access token failed: %s", string(bs))
+	}
 	var response AccessTokenResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
+	err = json.Unmarshal(bs, &response)
 	if err != nil {
 		log.Fatalf("decoding access token response failed: %s", err)
 	}

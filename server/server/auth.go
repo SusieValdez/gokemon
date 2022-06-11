@@ -13,7 +13,13 @@ import (
 func (s *Server) DiscordLogin(c *gin.Context) {
 	authCode := c.Request.URL.Query().Get("code")
 	accessToken := s.DiscordClient.GetAccessToken(authCode).AccessToken
+	if accessToken == "" {
+		log.Fatalf("fetching access token failed")
+	}
 	discordUser := s.DiscordClient.GetUser("@me", accessToken)
+	if discordUser.ID == "" {
+		log.Fatalf("fetching discord user failed")
+	}
 	username := discordUser.Username
 	var user models.User
 	s.DB.Preload("OwnedPokemon").Preload("Friends").First(&user, "discord_id = ?", discordUser.ID)

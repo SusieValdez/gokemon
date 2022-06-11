@@ -23,9 +23,8 @@ func (s *Server) GetRandomPokemon() models.Pokemon {
 }
 
 func (s *Server) NewPokemonLoop() {
-	ticker := time.NewTicker(5000 * time.Millisecond)
+	ticker := time.NewTicker(20 * time.Minute)
 	for {
-		<-ticker.C
 		var users []models.User
 		s.DB.Find(&users)
 		for _, user := range users {
@@ -34,5 +33,6 @@ func (s *Server) NewPokemonLoop() {
 			user.OwnedPokemon = append(user.OwnedPokemon, randomPokemon)
 			s.DB.Save(&user)
 		}
+		<-ticker.C
 	}
 }

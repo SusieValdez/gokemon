@@ -50,9 +50,15 @@ func main() {
 		RedirectURI:  discordRedirectUri,
 	}
 
-	db.AutoMigrate(&models.User{})
-	db.AutoMigrate(&models.Pokemon{})
-	db.AutoMigrate(&models.FriendRequest{})
+	if err := db.AutoMigrate(&models.User{}); err != nil {
+		log.Fatalln(err)
+	}
+	if err := db.AutoMigrate(&models.Pokemon{}); err != nil {
+		log.Fatalln(err)
+	}
+	if err := db.AutoMigrate(&models.FriendRequest{}); err != nil {
+		log.Fatalln(err)
+	}
 
 	s := &server.Server{
 		DB:            db,
