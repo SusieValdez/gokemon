@@ -14,8 +14,27 @@ type UserProps = {
   user: User;
 };
 
+type PokemonFilter = "all" | "owned" | "unowned";
+
+const filteredPokemon = (
+  allPokemon: Pokemon[],
+  ownedPokemon: Pokemon[],
+  pokemonFilter: PokemonFilter,
+  ownsPokemon: (id: number) => boolean
+): Pokemon[] => {
+  switch (pokemonFilter) {
+    case "all":
+      return allPokemon;
+    case "owned":
+      return ownedPokemon;
+    case "unowned":
+      return allPokemon.filter((p) => !ownsPokemon(p.id));
+  }
+};
+
 function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
-  const [pokemons, setPokemons] = useState<Pokemon[]>([]);
+  const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
+  const [pokemonFilter, setPokemonFilter] = useState<PokemonFilter>("all");
   const ownedPokemonMap = (user.ownedPokemon ?? []).reduce(
     (acc, pokemon) => ({
       ...acc,
@@ -25,8 +44,15 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
   );
   const ownsPokemon = (id: number) => ownedPokemonMap[id] !== undefined;
 
+  const pokemons = filteredPokemon(
+    allPokemon,
+    user.ownedPokemon,
+    pokemonFilter,
+    ownsPokemon
+  );
+
   useEffect(() => {
-    getPokemons().then((pokemons) => setPokemons(pokemons));
+    getPokemons().then((pokemons) => setAllPokemon(pokemons));
   }, []);
 
   const onClickSendFriendRequest = () => {
@@ -59,7 +85,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
           />
           <h2 className="text-3xl inline-block">
             {user.username}'s Pokemon - ({user.ownedPokemon.length} /{" "}
-            {pokemons.length})
+            {allPokemon.length})
           </h2>
         </div>
         {canSeeFriendRequestButton &&
@@ -88,9 +114,34 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
             </button>
           ))}
       </div>
-
+      <div className="flex gap-2 text-lg mb-4">
+        <button
+          onClick={() => setPokemonFilter("all")}
+          className={`cursor-pointer rounded px-4 py-2 ${
+            pokemonFilter === "all" ? "bg-green-500" : "bg-green-300"
+          }`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => setPokemonFilter("unowned")}
+          className={`cursor-pointer rounded px-4 py-2 ${
+            pokemonFilter === "unowned" ? "bg-green-500" : "bg-green-300"
+          }`}
+        >
+          Unowned
+        </button>
+        <button
+          onClick={() => setPokemonFilter("owned")}
+          className={`cursor-pointer rounded px-4 py-2 ${
+            pokemonFilter === "owned" ? "bg-green-500" : "bg-green-300"
+          }`}
+        >
+          Owned
+        </button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 ">
-        {pokemons.length === 0 ? (
+        {allPokemon.length === 0 ? (
           <div>loading...</div>
         ) : (
           pokemons.map(({ id, name, spriteUrl }) => (
