@@ -29,9 +29,7 @@ func (s *Server) NewPokemonLoop() {
 		s.DB.Find(&users)
 		for _, user := range users {
 			randomPokemon := s.GetRandomPokemon()
-			// TODO: Check if could replace with s.DB.Model(&user).Association("OwnedPokemon").Append(randomPokemon) ?
-			user.OwnedPokemon = append(user.OwnedPokemon, randomPokemon)
-			s.DB.Save(&user)
+			s.DB.Model(&user).Association("OwnedPokemon").Append(&randomPokemon)
 		}
 		<-ticker.C
 	}

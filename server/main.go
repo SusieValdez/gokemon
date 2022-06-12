@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -25,6 +27,8 @@ func main() {
 	if err != nil {
 		log.Fatal("loading .env file failed")
 	}
+
+	rand.Seed(time.Now().Unix())
 
 	pgUsername := os.Getenv("POSTGRES_USERNAME")
 	pgPassword := os.Getenv("POSTGRES_PASSWORD")
@@ -65,7 +69,6 @@ func main() {
 		DiscordClient: &discordClient,
 		ClientBaseURL: clientBaseURL,
 	}
-	go s.NewPokemonLoop()
 
 	store := cookie.NewStore([]byte(sessionStoreAuthKey))
 	store.Options(sessions.Options{Path: "/", MaxAge: 60 * 60 * 24})
@@ -99,5 +102,6 @@ func main() {
 	r.POST("/api/v1/friendRequests", s.PostFriendRequest)
 	r.DELETE("/api/v1/friendRequests", s.DeleteFriendRequest)
 
+	go s.NewPokemonLoop()
 	r.Run(":8080")
 }
