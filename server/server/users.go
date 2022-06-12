@@ -76,3 +76,29 @@ func (s *Server) DeleteFriendship(c *gin.Context) {
 	s.DB.Model(&friend).Association("Friends").Delete(&user)
 	c.JSON(http.StatusOK, "ok")
 }
+
+type AcceptTradeRequest struct {
+	TradeRequestID uint `json:"tradeRequestId"`
+}
+
+func (s *Server) AcceptTrade(c *gin.Context) {
+	var acceptTradeRequest AcceptTradeRequest
+	c.BindJSON(&acceptTradeRequest)
+
+	var tradeRequest models.TradeRequest
+	s.DB.Preload("User").
+		Preload("UserPokemon").
+		Preload("Friend").
+		Preload("FriendPokemon").First(&tradeRequest, acceptTradeRequest.TradeRequestID)
+	user := tradeRequest.User
+	userPokemon := tradeRequest.UserPokemon
+	friend := tradeRequest.Friend
+	friendPokemon := tradeRequest.FriendPokemon
+
+	s.DB.Model(&user).Association("OwnedPokemon").Delete(&userPokemon)
+	s.DB.Model(&friend).Association("OwnedPokemon").Delete(&friendPokemon)
+	s.DB.Model(&user).Association("OwnedPokemon").Append(&friendPokemon)
+	s.DB.Model(&friend).Association("OwnedPokemon").Append(&userPokemon)
+	s.DB.Delete(&models.TradeRequest{}, tradeRequest.ID)
+	c.JSON(http.StatusOK, "ok")
+}

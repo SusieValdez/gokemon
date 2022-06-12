@@ -63,6 +63,9 @@ func main() {
 	if err := db.AutoMigrate(&models.FriendRequest{}); err != nil {
 		log.Fatalln(err)
 	}
+	if err := db.AutoMigrate(&models.TradeRequest{}); err != nil {
+		log.Fatalln(err)
+	}
 
 	s := &server.Server{
 		DB:            db,
@@ -98,9 +101,15 @@ func main() {
 	r.POST("api/v1/friendships", s.PostFriendship)
 	r.DELETE("api/v1/friendships", s.DeleteFriendship)
 
+	r.POST("api/v1/acceptTrade", s.AcceptTrade)
+
 	r.GET("/api/v1/friendRequests", s.GetFriendRequests)
 	r.POST("/api/v1/friendRequests", s.PostFriendRequest)
 	r.DELETE("/api/v1/friendRequests", s.DeleteFriendRequest)
+
+	r.GET("/api/v1/tradeRequests", s.GetTradeRequests)
+	r.POST("/api/v1/tradeRequests", s.PostTradeRequest)
+	r.DELETE("/api/v1/tradeRequests", s.DeleteTradeRequest)
 
 	go s.NewPokemonLoop()
 	r.Run(":8080")

@@ -22,3 +22,17 @@ type FriendRequest struct {
 	FriendID  uint      `json:"friendId"`
 	Friend    User      `json:"friend"`
 }
+
+type TradeRequest struct {
+	ID              uint      `json:"id" gorm:"primary_key"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	UserID          uint      `json:"userId"`
+	User            User      `json:"user"`
+	UserPokemonID   uint      `json:"userPokemonId"`
+	UserPokemon     Pokemon   `json:"userPokemon"`
+	FriendID        uint      `json:"friendId"`
+	Friend          User      `json:"friend"`
+	FriendPokemonID uint      `json:"friendPokemonId"`
+	FriendPokemon   Pokemon   `json:"friendPokemon"`
+}

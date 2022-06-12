@@ -22,3 +22,11 @@ export type FriendRequest = {
   user: User;
   friend: User;
 };
+
+export type TradeRequest = {
+  id: number;
+  user: User;
+  userPokemon: Pokemon;
+  friend: User;
+  friendPokemon: Pokemon;
+};
