@@ -41,7 +41,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
     deleteFriendship(friendId).then(() => window.location.reload());
   };
 
-  const canSeeFriendRequestButton = user.id !== loggedInUser?.id;
+  const canSeeFriendRequestButton = loggedInUser && user.id !== loggedInUser.id;
 
   const friendRequestFromLoggedInUser = sentFriendRequests.find(
     ({ user: { id } }) => id === loggedInUser?.id
