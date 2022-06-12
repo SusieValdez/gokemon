@@ -5,9 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"susie.mx/gokemon/models"
 )
+
+const NewPokemonInterval = 25 * time.Minute
 
 func (s *Server) GetPokemons(c *gin.Context) {
 	var pokemon []models.Pokemon
@@ -22,15 +25,52 @@ func (s *Server) GetRandomPokemon() models.Pokemon {
 	return pokemon
 }
 
-func (s *Server) NewPokemonLoop() {
-	ticker := time.NewTicker(20 * time.Minute)
-	for {
-		var users []models.User
-		s.DB.Find(&users)
-		for _, user := range users {
-			randomPokemon := s.GetRandomPokemon()
-			s.DB.Model(&user).Association("OwnedPokemon").Append(&randomPokemon)
-		}
-		<-ticker.C
+func (s *Server) NewPokemonTimer(user models.User) {
+	nextTime := user.NextPokemonSelectionTimestamp
+	now := time.Now().UnixMilli()
+	duration := time.Duration(nextTime-now) * time.Millisecond
+	<-time.After(duration)
+	var existingPendingPokemon models.PendingPokemon
+	s.DB.First(&existingPendingPokemon, "user_id = ?", user.ID)
+	if existingPendingPokemon.ID != 0 {
+		return
 	}
+	randomPokemon := []models.Pokemon{s.GetRandomPokemon(), s.GetRandomPokemon(), s.GetRandomPokemon()}
+	s.DB.Create(&models.PendingPokemon{
+		User:    user,
+		Pokemon: randomPokemon,
+	})
+}
+
+func (s *Server) GetPendingPokemons(c *gin.Context) {
+	session := sessions.Default(c)
+	username := session.Get("username")
+	var user models.User
+	s.DB.First(&user, "username = ?", username)
+	var pendingPokemon models.PendingPokemon
+	s.DB.Preload("Pokemon").Find(&pendingPokemon, "user_id = ?", user.ID)
+	c.JSON(http.StatusOK, pendingPokemon)
+}
+
+type SelectPokemonRequest struct {
+	PendingPokemonIndex uint `json:"pendingPokemonIndex"`
+}
+
+func (s *Server) SelectPokemon(c *gin.Context) {
+	session := sessions.Default(c)
+	username := session.Get("username")
+	var user models.User
+	s.DB.First(&user, "username = ?", username)
+	var pendingPokemon models.PendingPokemon
+	s.DB.Preload("Pokemon").Find(&pendingPokemon, "user_id = ?", user.ID)
+	var request SelectPokemonRequest
+	c.BindJSON(&request)
+	selectedPokemon := pendingPokemon.Pokemon[request.PendingPokemonIndex]
+	s.DB.Model(&user).Association("OwnedPokemon").Append(&selectedPokemon)
+	s.DB.Model(&pendingPokemon).Association("Pokemon").Clear()
+	s.DB.Delete(&pendingPokemon)
+	user.NextPokemonSelectionTimestamp = time.Now().Add(NewPokemonInterval).UnixMilli()
+	s.DB.Save(&user)
+	go s.NewPokemonTimer(user)
+	c.JSON(http.StatusOK, nil)
 }

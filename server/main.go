@@ -60,6 +60,9 @@ func main() {
 	if err := db.AutoMigrate(&models.Pokemon{}); err != nil {
 		log.Fatalln(err)
 	}
+	if err := db.AutoMigrate(&models.PendingPokemon{}); err != nil {
+		log.Fatalln(err)
+	}
 	if err := db.AutoMigrate(&models.FriendRequest{}); err != nil {
 		log.Fatalln(err)
 	}
@@ -91,6 +94,8 @@ func main() {
 		AllowCredentials: true,
 	}))
 	r.GET("/api/v1/pokemon", s.GetPokemons)
+	r.GET("/api/v1/pendingPokemon", s.GetPendingPokemons)
+	r.POST("/api/v1/pendingPokemon/select", s.SelectPokemon)
 
 	r.GET("/api/v1/auth/discord/redirect", s.DiscordLogin)
 	r.GET("/api/v1/auth/logout", s.Logout)
@@ -111,6 +116,10 @@ func main() {
 	r.POST("/api/v1/tradeRequests", s.PostTradeRequest)
 	r.DELETE("/api/v1/tradeRequests", s.DeleteTradeRequest)
 
-	go s.NewPokemonLoop()
+	var users []models.User
+	s.DB.Find(&users)
+	for _, user := range users {
+		go s.NewPokemonTimer(user)
+	}
 	r.Run(":8080")
 }

@@ -10,6 +10,7 @@ export type User = {
   profilePictureUrl: string;
   ownedPokemon: Pokemon[];
   friends: User[];
+  nextPokemonSelectionTimestamp: number; // millis since epoch
 };
 
 export type UserSession = {

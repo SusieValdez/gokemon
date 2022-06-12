@@ -4,20 +4,24 @@ import NotificationIcon from "../assets/bell-solid.svg";
 import FriendListIcon from "../assets/user-group-solid.svg";
 import TradeRequestIcon from "../assets/retweet-solid.svg";
 import { FriendRequest, TradeRequest, User } from "../models";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useElementClientRect } from "../hooks/useElementClientRect";
-import {
-  useOnClickOutsideElement,
-  useOnClickOutsideElements,
-} from "../hooks/useOnClickOutsideElement";
-import { deleteFriendRequest, getFriendRequests } from "../api/friendRequests";
+import { useOnClickOutsideElements } from "../hooks/useOnClickOutsideElement";
+import { deleteFriendRequest } from "../api/friendRequests";
 import { acceptTrade, postFriendship } from "../api/users";
 import { deleteTradeRequest } from "../api/tradeRequests";
+
+function convertSeconds(s: number): string {
+  var min = Math.floor(s / 60);
+  var sec = s % 60;
+  return `${min}`.padStart(2, "0") + ":" + `${sec}`.padStart(2, "0");
+}
 
 type NavbarProps = {
   loggedInUser?: User;
   recievedFriendRequests: FriendRequest[];
   recievedTradeRequests: TradeRequest[];
+  secondsRemainingUntilNewPokemon?: number;
 };
 
 type MenuType = "user" | "friends" | "notifications" | "trade-requests";
@@ -26,6 +30,7 @@ const Navbar = ({
   loggedInUser,
   recievedFriendRequests,
   recievedTradeRequests,
+  secondsRemainingUntilNewPokemon,
 }: NavbarProps) => {
   const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
   const userMenu = useRef<HTMLDivElement>(null);
@@ -72,6 +77,13 @@ const Navbar = ({
             Gokemon
           </span>
         </a>
+        {secondsRemainingUntilNewPokemon && (
+          <span>
+            {secondsRemainingUntilNewPokemon > 0
+              ? convertSeconds(secondsRemainingUntilNewPokemon)
+              : "new pokemon!"}
+          </span>
+        )}
         <div className="flex">
           {loggedInUser ? (
             <>
