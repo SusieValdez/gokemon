@@ -2,7 +2,8 @@ import { DISCORD_LOGIN_URL, LOGOUT_URL, userPageUrl } from "../api/links";
 import Pokeball from "../assets/pokeball.png";
 import NotificationIcon from "../assets/bell-solid.svg";
 import FriendListIcon from "../assets/user-group-solid.svg";
-import { FriendRequest, User } from "../models";
+import TradeRequestIcon from "../assets/retweet-solid.svg";
+import { FriendRequest, TradeRequest, User } from "../models";
 import { useEffect, useRef, useState } from "react";
 import { useElementClientRect } from "../hooks/useElementClientRect";
 import {
@@ -10,16 +11,22 @@ import {
   useOnClickOutsideElements,
 } from "../hooks/useOnClickOutsideElement";
 import { deleteFriendRequest, getFriendRequests } from "../api/friendRequests";
-import { postFriendship } from "../api/users";
+import { acceptTrade, postFriendship } from "../api/users";
+import { deleteTradeRequest } from "../api/tradeRequests";
 
 type NavbarProps = {
   loggedInUser?: User;
   recievedFriendRequests: FriendRequest[];
+  recievedTradeRequests: TradeRequest[];
 };
 
-type MenuType = "user" | "friends" | "notifications";
+type MenuType = "user" | "friends" | "notifications" | "trade-requests";
 
-const Navbar = ({ loggedInUser, recievedFriendRequests }: NavbarProps) => {
+const Navbar = ({
+  loggedInUser,
+  recievedFriendRequests,
+  recievedTradeRequests,
+}: NavbarProps) => {
   const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
   const userMenu = useRef<HTMLDivElement>(null);
   const userMenuRect = useElementClientRect(userMenu);
@@ -27,12 +34,18 @@ const Navbar = ({ loggedInUser, recievedFriendRequests }: NavbarProps) => {
   const notificationsMenu = useRef<HTMLDivElement>(null);
   const notificationsMenuRect = useElementClientRect(notificationsMenu);
 
+  const tradesMenu = useRef<HTMLDivElement>(null);
+  const tradesMenuRect = useElementClientRect(notificationsMenu);
+
   const friendsMenu = useRef<HTMLDivElement>(null);
   const friendsMenuRect = useElementClientRect(friendsMenu);
 
-  useOnClickOutsideElements([userMenu, notificationsMenu, friendsMenu], () => {
-    setOpenMenu(undefined);
-  });
+  useOnClickOutsideElements(
+    [userMenu, notificationsMenu, friendsMenu, tradesMenu],
+    () => {
+      setOpenMenu(undefined);
+    }
+  );
 
   const onClickAcceptFriendRequest = async (id: number) => {
     postFriendship(id).then(() => window.location.reload());
@@ -40,6 +53,14 @@ const Navbar = ({ loggedInUser, recievedFriendRequests }: NavbarProps) => {
 
   const onClickDenyFriendRequest = (id: number) => {
     deleteFriendRequest(id).then(() => window.location.reload());
+  };
+
+  const onClickAcceptTradeRequest = async (id: number) => {
+    acceptTrade(id).then(() => window.location.reload());
+  };
+
+  const onClickDenyTradeRequest = (id: number) => {
+    deleteTradeRequest(id).then(() => window.location.reload());
   };
 
   return (
@@ -198,6 +219,105 @@ const Navbar = ({ loggedInUser, recievedFriendRequests }: NavbarProps) => {
                     ) : (
                       <div className="py-2 px-4 w-44 text-center">
                         You have no new notifications...
+                      </div>
+                    )}
+                  </div>
+                )}
+              </span>
+
+              <span ref={tradesMenu} className="mr-2">
+                {recievedTradeRequests.length > 0 && (
+                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
+                )}
+                <button
+                  type="button"
+                  className={`flex mr-5 text-sm outline-none ${
+                    openMenu === "trade-requests"
+                      ? "brightness-75"
+                      : "brightness-100"
+                  }`}
+                  id="trade-requests-menu-button"
+                  aria-expanded={openMenu === "trade-requests"}
+                  data-dropdown-toggle="dropdown"
+                  onClick={() =>
+                    setOpenMenu(
+                      openMenu === "trade-requests"
+                        ? undefined
+                        : "trade-requests"
+                    )
+                  }
+                >
+                  <span className="sr-only">Open trade requests menu</span>
+                  <img
+                    className="w-8 h-8 rounded-full"
+                    style={{ filter: "invert(100%)" }}
+                    src={TradeRequestIcon}
+                    alt="trade request icon"
+                  />
+                </button>
+
+                {openMenu === "trade-requests" && (
+                  <div
+                    className="z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    style={{
+                      position: "absolute",
+                      inset: "0px auto auto 0px",
+                      margin: "0px",
+                      transform: `translate3d(${
+                        tradesMenuRect.x -
+                        (recievedTradeRequests.length > 0 ? 250 : 30)
+                      }px, ${
+                        tradesMenuRect.y + tradesMenuRect.height + 20
+                      }px, 0px)`,
+                    }}
+                    id="dropdown"
+                  >
+                    <div className="py-3 px-4">
+                      <span className="block text-sm text-gray-900 dark:text-white">
+                        Trade Requests
+                      </span>
+                    </div>
+                    {recievedTradeRequests.length > 0 ? (
+                      <ul className="py-1" aria-labelledby="dropdown">
+                        {recievedTradeRequests.map(
+                          ({ id, user, userPokemon, friendPokemon }) => (
+                            <li
+                              key={id}
+                              className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                            >
+                              <p>{user.username} wants to trade with you!</p>
+
+                              <div className="flex items-center">
+                                <div className="flex items-center">
+                                  Their
+                                  <img src={userPokemon.spriteUrl} />
+                                  for your
+                                  <img src={friendPokemon.spriteUrl} />
+                                </div>
+                                <div>
+                                  <button
+                                    className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                    onClick={() =>
+                                      onClickAcceptTradeRequest(id)
+                                    }
+                                  >
+                                    ✅
+                                  </button>
+                                  <button
+                                    className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                    onClick={() => onClickDenyTradeRequest(id)}
+                                  >
+                                    ❌
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    ) : (
+                      <div className="py-2 px-4 w-44 text-center">
+                        You have no new trade requests...
                       </div>
                     )}
                   </div>

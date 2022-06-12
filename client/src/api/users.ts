@@ -22,3 +22,12 @@ export const deleteFriendship = (friendId: number) =>
       friendId,
     }),
   }).then((res) => res.json());
+
+export const acceptTrade = (tradeRequestId: number) =>
+  fetch(`${SERVER_BASE_URL}/api/v1/acceptTrade`, {
+    method: "POST",
+    credentials: "include",
+    body: JSON.stringify({
+      tradeRequestId,
+    }),
+  }).then((res) => res.json());

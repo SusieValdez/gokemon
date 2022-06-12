@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { getFriendRequests } from "./api/friendRequests";
+import { getTradeRequests } from "./api/tradeRequests";
 import { getUser } from "./api/users";
 import Navbar from "./components/Navbar";
 import HomePage from "./components/pages/Home";
 import UserPage from "./components/pages/User";
-import { FriendRequest, UserSession } from "./models";
+import { FriendRequest, TradeRequest, UserSession } from "./models";
 
 function App() {
   const [userSession, setUserSession] = useState<UserSession>();
@@ -25,10 +26,18 @@ function App() {
     recieved: FriendRequest[];
   }>({ sent: [], recieved: [] });
 
+  const [tradeRequests, setTradeRequests] = useState<{
+    sent: TradeRequest[];
+    recieved: TradeRequest[];
+  }>({ sent: [], recieved: [] });
+
   useEffect(() => {
     if (userSession?.loggedInUser) {
       getFriendRequests().then((friendRequests) =>
         setFriendRequests(friendRequests)
+      );
+      getTradeRequests().then((tradeRequests) =>
+        setTradeRequests(tradeRequests)
       );
     }
   }, [userSession]);
@@ -40,6 +49,7 @@ function App() {
           <Navbar
             loggedInUser={userSession.loggedInUser}
             recievedFriendRequests={friendRequests.recieved}
+            recievedTradeRequests={tradeRequests.recieved}
           />
           <div className="p-4 mx-auto">
             {userSession.user ? (
