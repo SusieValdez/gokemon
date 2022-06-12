@@ -90,15 +90,18 @@ func (s *Server) AcceptTrade(c *gin.Context) {
 		Preload("UserPokemon").
 		Preload("Friend").
 		Preload("FriendPokemon").First(&tradeRequest, acceptTradeRequest.TradeRequestID)
-	user := tradeRequest.User
-	userPokemon := tradeRequest.UserPokemon
-	friend := tradeRequest.Friend
-	friendPokemon := tradeRequest.FriendPokemon
+	user := tradeRequest.User                   // susie
+	userPokemon := tradeRequest.UserPokemon     // metapod
+	friend := tradeRequest.Friend               // yvanna
+	friendPokemon := tradeRequest.FriendPokemon // ivysaur
 
 	s.DB.Model(&user).Association("OwnedPokemon").Delete(&userPokemon)
 	s.DB.Model(&friend).Association("OwnedPokemon").Delete(&friendPokemon)
 	s.DB.Model(&user).Association("OwnedPokemon").Append(&friendPokemon)
 	s.DB.Model(&friend).Association("OwnedPokemon").Append(&userPokemon)
-	s.DB.Delete(&models.TradeRequest{}, tradeRequest.ID)
+	s.DB.Delete(&models.TradeRequest{}, "user_id = ? AND user_pokemon_id = ?", user.ID, userPokemon.ID)
+	s.DB.Delete(&models.TradeRequest{}, "friend_id = ? AND friend_pokemon_id = ?", user.ID, userPokemon.ID)
+	s.DB.Delete(&models.TradeRequest{}, "user_id = ? AND user_pokemon_id = ?", friend.ID, friendPokemon.ID)
+	s.DB.Delete(&models.TradeRequest{}, "friend_id = ? AND friend_pokemon_id = ?", friend.ID, friendPokemon.ID)
 	c.JSON(http.StatusOK, "ok")
 }
