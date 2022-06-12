@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import Select, { createFilter } from "react-select";
 import {
   deleteFriendRequest,
   postFriendRequest,
@@ -259,33 +260,46 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
             </span>
           </div>
 
-          <div className="flex gap-2 justify-between place-items-center">
+          <div className="flex gap-2 justify-between">
             <div className="flex-1">
-              <label
-                htmlFor="countries"
-                className="block mb-2 text-sm font-medium "
-              >
+              <label className="block mb-2 text-sm font-medium ">
                 {loggedInUser.username}'s Pokemon
               </label>
-              <select
-                id="countries"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                value={offeredPokemon.id}
-                onChange={(e) => {
-                  setOfferedPokemon(
-                    loggedInUserOwnedPokemonMap[parseInt(e.target.value)]
-                  );
+              <Select
+                filterOption={createFilter({
+                  ignoreCase: true,
+                  ignoreAccents: true,
+                  matchFrom: "any",
+                  stringify: (option) =>
+                    loggedInUserOwnedPokemonMap[parseInt(option.value)].name,
+                  trim: true,
+                })}
+                options={loggedInUser.ownedPokemon.map((p) => ({
+                  value: p.id,
+                  label: (
+                    <div className="flex items-center">
+                      <img src={p.spriteUrl} />
+                      {p.name}
+                    </div>
+                  ),
+                }))}
+                value={{
+                  value: offeredPokemon.id,
+                  label: (
+                    <div className="flex items-center">
+                      <img src={offeredPokemon.spriteUrl} />
+                      {offeredPokemon.name}
+                    </div>
+                  ),
                 }}
-              >
-                {loggedInUser.ownedPokemon.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(e) => {
+                  e?.value &&
+                    setOfferedPokemon(loggedInUserOwnedPokemonMap[e.value]);
+                }}
+              />
               <img
                 src={offeredPokemon.spriteUrl}
-                className="w-full [image-rendering:pixelated] rounded-md"
+                className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
                 alt="user pokemon"
               />
             </div>
@@ -296,25 +310,40 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
               >
                 {user.username}'s Pokemon
               </label>
-              <select
-                id="countries"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                value={wantedPokemon.id}
-                onChange={(e) => {
-                  setWantedPokemon(
-                    userOwnedPokemonMap[parseInt(e.target.value)]
-                  );
+              <Select
+                filterOption={createFilter({
+                  ignoreCase: true,
+                  ignoreAccents: true,
+                  matchFrom: "any",
+                  stringify: (option) =>
+                    userOwnedPokemonMap[parseInt(option.value)].name,
+                  trim: true,
+                })}
+                value={{
+                  value: wantedPokemon.id,
+                  label: (
+                    <div className="flex items-center">
+                      <img src={wantedPokemon.spriteUrl} />
+                      {wantedPokemon.name}
+                    </div>
+                  ),
                 }}
-              >
-                {user.ownedPokemon.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                options={user.ownedPokemon.map((p) => ({
+                  value: p.id,
+                  label: (
+                    <div className="flex items-center">
+                      <img src={p.spriteUrl} />
+                      {p.name}
+                    </div>
+                  ),
+                }))}
+                onChange={(e) => {
+                  e?.value && setWantedPokemon(userOwnedPokemonMap[e.value]);
+                }}
+              />
               <img
                 src={wantedPokemon.spriteUrl}
-                className="w-full [image-rendering:pixelated] rounded-md"
+                className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
                 alt="user pokemon"
               />
             </div>

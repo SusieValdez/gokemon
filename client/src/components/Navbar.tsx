@@ -93,7 +93,6 @@ const Navbar = ({
                   className={`flex mr-5 text-sm outline-none ${
                     openMenu === "friends" ? "brightness-75" : "brightness-100"
                   }`}
-                  id="friends-menu-button"
                   aria-expanded={openMenu === "friends"}
                   data-dropdown-toggle="dropdown"
                   onClick={() =>
@@ -120,7 +119,6 @@ const Navbar = ({
                         friendsMenuRect.y + friendsMenuRect.height + 20
                       }px, 0px)`,
                     }}
-                    id="dropdown"
                   >
                     <div className="py-3 px-4">
                       <span className="block text-sm text-gray-900 dark:text-white">
@@ -165,7 +163,6 @@ const Navbar = ({
                       ? "brightness-75"
                       : "brightness-100"
                   }`}
-                  id="notifications-menu-button"
                   aria-expanded={openMenu === "notifications"}
                   data-dropdown-toggle="dropdown"
                   onClick={() =>
@@ -198,7 +195,6 @@ const Navbar = ({
                         20
                       }px, 0px)`,
                     }}
-                    id="dropdown"
                   >
                     <div className="py-3 px-4">
                       <span className="block text-sm text-gray-900 dark:text-white">
@@ -248,7 +244,6 @@ const Navbar = ({
                       ? "brightness-75"
                       : "brightness-100"
                   }`}
-                  id="trade-requests-menu-button"
                   aria-expanded={openMenu === "trade-requests"}
                   data-dropdown-toggle="dropdown"
                   onClick={() =>
@@ -282,7 +277,6 @@ const Navbar = ({
                         tradesMenuRect.y + tradesMenuRect.height + 20
                       }px, 0px)`,
                     }}
-                    id="dropdown"
                   >
                     <div className="py-3 px-4">
                       <span className="block text-sm text-gray-900 dark:text-white">
@@ -339,7 +333,6 @@ const Navbar = ({
                 <button
                   type="button"
                   className="flex mr-3 text-sm rounded-full md:mr-0 outline-none"
-                  id="user-menu-button"
                   aria-expanded={openMenu === "user"}
                   data-dropdown-toggle="dropdown"
                   onClick={() =>
@@ -365,7 +358,6 @@ const Navbar = ({
                         userMenuRect.y + userMenuRect.height + 20
                       }px, 0px)`,
                     }}
-                    id="dropdown"
                   >
                     <div className="py-3 px-4">
                       <span className="block text-sm text-gray-900 dark:text-white">
