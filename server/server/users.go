@@ -52,6 +52,7 @@ func (s *Server) PostFriendship(c *gin.Context) {
 
 	s.DB.Model(&user).Association("Friends").Append(&friend)
 	s.DB.Model(&friend).Association("Friends").Append(&user)
+	s.DB.Delete(&models.FriendRequest{}, friendRequest.ID)
 	c.JSON(http.StatusOK, "ok")
 }
 

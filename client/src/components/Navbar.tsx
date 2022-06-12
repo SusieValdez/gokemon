@@ -35,9 +35,7 @@ const Navbar = ({ loggedInUser, recievedFriendRequests }: NavbarProps) => {
   });
 
   const onClickAcceptFriendRequest = async (id: number) => {
-    await postFriendship(id);
-    await deleteFriendRequest(id);
-    window.location.reload();
+    postFriendship(id).then(() => window.location.reload());
   };
 
   const onClickDenyFriendRequest = (id: number) => {
