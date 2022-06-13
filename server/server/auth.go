@@ -31,7 +31,7 @@ func (s *Server) DiscordLogin(c *gin.Context) {
 			ProfilePictureURL:             fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", discordUser.ID, discordUser.Avatar),
 			Friends:                       []*models.User{},
 			OwnedPokemon:                  []models.Pokemon{},
-			NextPokemonSelectionTimestamp: time.Now().Unix(),
+			NextPokemonSelectionTimestamp: time.Now().Add(time.Minute).UnixMilli(),
 		})
 	} else {
 		username = user.Username

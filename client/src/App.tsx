@@ -36,6 +36,14 @@ function App() {
   const [secondsRemainingUntilNewPokemon, setSecondsRemainingUntilNewPokemon] =
     useState<number>();
 
+  const getSecondsUntil = (nextTimestamp: number) => {
+    const difference = nextTimestamp - Date.now();
+    if (difference < 0) {
+      return 0;
+    }
+    return Math.floor(difference / 1000);
+  };
+
   useEffect(() => {
     if (userSession?.loggedInUser) {
       getFriendRequests().then((friendRequests) =>
@@ -46,16 +54,17 @@ function App() {
       );
       const nextPokemonTimestamp =
         userSession.loggedInUser.nextPokemonSelectionTimestamp + 1000; // +1000 to ensure server has updated the pending pokemon
+      setSecondsRemainingUntilNewPokemon(getSecondsUntil(nextPokemonTimestamp));
       setInterval(() => {
         setSecondsRemainingUntilNewPokemon(
-          Math.floor((nextPokemonTimestamp - Date.now()) / 1000)
+          getSecondsUntil(nextPokemonTimestamp)
         );
       }, 1000);
       setTimeout(() => {
         getPendingPokemons().then(
           ({ pokemon }) => pokemon && setPendingPokemon(pokemon)
         );
-      }, nextPokemonTimestamp - Date.now());
+      }, getSecondsUntil(nextPokemonTimestamp) * 1000);
     }
   }, [userSession]);
 
