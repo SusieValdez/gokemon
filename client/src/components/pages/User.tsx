@@ -155,7 +155,8 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
   const canInteractWithUser = loggedInUser && user.id !== loggedInUser.id;
 
   const friendRequestFromLoggedInUser = sentFriendRequests.find(
-    ({ user: { id } }) => id === loggedInUser?.id
+    ({ user: { id }, friend: { id: fid } }) =>
+      id === loggedInUser?.id && fid === user.id
   );
 
   const friend = loggedInUser?.friends.find(({ id }) => id === user.id);
@@ -185,7 +186,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
             </button>
           ) : friendRequestFromLoggedInUser ? (
             <button
-              className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
+              className="w-fit h-fit text-xs bg-red-500 p-3 rounded-md md:text-lg hover:bg-red-600 active:brightness-90 md:w-fit"
               onClick={() =>
                 onClickCancelFriendRequest(friendRequestFromLoggedInUser.id)
               }
