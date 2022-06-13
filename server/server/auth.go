@@ -25,14 +25,16 @@ func (s *Server) DiscordLogin(c *gin.Context) {
 	var user models.User
 	s.DB.Preload("OwnedPokemon").Preload("Friends").First(&user, "discord_id = ?", discordUser.ID)
 	if user.ID == 0 {
-		s.DB.Create(&models.User{
+		newUser := models.User{
 			DiscordID:                     discordUser.ID,
 			Username:                      username,
 			ProfilePictureURL:             fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", discordUser.ID, discordUser.Avatar),
 			Friends:                       []*models.User{},
 			OwnedPokemon:                  []models.Pokemon{},
 			NextPokemonSelectionTimestamp: time.Now().Add(time.Minute).UnixMilli(),
-		})
+		}
+		s.DB.Create(&newUser)
+		s.NewPokemonTimer(newUser.ID)
 	} else {
 		username = user.Username
 	}

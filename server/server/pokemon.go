@@ -25,7 +25,9 @@ func (s *Server) GetRandomPokemon() models.Pokemon {
 	return pokemon
 }
 
-func (s *Server) NewPokemonTimer(user models.User) {
+func (s *Server) NewPokemonTimer(userID uint) {
+	var user models.User
+	s.DB.First(&user, userID)
 	nextTime := user.NextPokemonSelectionTimestamp
 	now := time.Now().UnixMilli()
 	duration := time.Duration(nextTime-now) * time.Millisecond
@@ -71,6 +73,6 @@ func (s *Server) SelectPokemon(c *gin.Context) {
 	s.DB.Delete(&pendingPokemon)
 	user.NextPokemonSelectionTimestamp = time.Now().Add(NewPokemonInterval).UnixMilli()
 	s.DB.Save(&user)
-	go s.NewPokemonTimer(user)
+	go s.NewPokemonTimer(user.ID)
 	c.JSON(http.StatusOK, nil)
 }

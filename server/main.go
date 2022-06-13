@@ -119,7 +119,7 @@ func main() {
 	var users []models.User
 	s.DB.Find(&users)
 	for _, user := range users {
-		go s.NewPokemonTimer(user)
+		go s.NewPokemonTimer(user.ID)
 	}
 	r.Run(":8080")
 }
