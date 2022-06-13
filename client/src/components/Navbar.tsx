@@ -77,9 +77,9 @@ const Navbar = ({
             Gokemon
           </span>
         </a>
-        {secondsRemainingUntilNewPokemon && (
+        {secondsRemainingUntilNewPokemon !== undefined && (
           <span>
-            {secondsRemainingUntilNewPokemon > 0 &&
+            {secondsRemainingUntilNewPokemon >= 0 &&
               convertSeconds(secondsRemainingUntilNewPokemon)}
           </span>
         )}

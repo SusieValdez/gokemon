@@ -45,28 +45,29 @@ function App() {
   };
 
   useEffect(() => {
-    if (userSession?.loggedInUser) {
-      getFriendRequests().then((friendRequests) =>
-        setFriendRequests(friendRequests)
-      );
-      getTradeRequests().then((tradeRequests) =>
-        setTradeRequests(tradeRequests)
-      );
-      const nextPokemonTimestamp =
-        userSession.loggedInUser.nextPokemonSelectionTimestamp + 1000; // +1000 to ensure server has updated the pending pokemon
-      setSecondsRemainingUntilNewPokemon(getSecondsUntil(nextPokemonTimestamp));
-      setInterval(() => {
-        setSecondsRemainingUntilNewPokemon(
-          getSecondsUntil(nextPokemonTimestamp)
-        );
-      }, 1000);
-      setTimeout(() => {
-        getPendingPokemons().then(
-          ({ pokemon }) => pokemon && setPendingPokemon(pokemon)
-        );
-      }, getSecondsUntil(nextPokemonTimestamp) * 1000);
+    if (!userSession?.loggedInUser) {
+      return;
     }
-  }, [userSession]);
+    getFriendRequests().then((friendRequests) =>
+      setFriendRequests(friendRequests)
+    );
+    getTradeRequests().then((tradeRequests) => setTradeRequests(tradeRequests));
+    const nextPokemonTimestamp =
+      userSession.loggedInUser.nextPokemonSelectionTimestamp;
+    setSecondsRemainingUntilNewPokemon(getSecondsUntil(nextPokemonTimestamp));
+    const interval = setInterval(() => {
+      const secondsRemaining = getSecondsUntil(nextPokemonTimestamp);
+      setSecondsRemainingUntilNewPokemon(secondsRemaining);
+      if (secondsRemaining === 0 && pendingPokemon.length === 0) {
+        getPendingPokemons().then(({ pokemon }) =>
+          setPendingPokemon(pokemon ?? [])
+        );
+      }
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [userSession, pendingPokemon]);
 
   const onClickPendingPokemon = (index: number) => {
     selectPokemon(index).then(() => window.location.reload());
