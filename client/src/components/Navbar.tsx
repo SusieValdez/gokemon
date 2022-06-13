@@ -79,15 +79,14 @@ const Navbar = ({
         </a>
         {secondsRemainingUntilNewPokemon && (
           <span>
-            {secondsRemainingUntilNewPokemon > 0
-              ? convertSeconds(secondsRemainingUntilNewPokemon)
-              : "new pokemon!"}
+            {secondsRemainingUntilNewPokemon > 0 &&
+              convertSeconds(secondsRemainingUntilNewPokemon)}
           </span>
         )}
-        <div className="flex">
+        <div className="flex items-center">
           {loggedInUser ? (
             <>
-              <span ref={friendsMenu} className="mr-2">
+              <span ref={friendsMenu} className="">
                 <button
                   type="button"
                   className={`flex mr-5 text-sm outline-none ${
@@ -101,7 +100,7 @@ const Navbar = ({
                 >
                   <span className="sr-only">Open friends menu</span>
                   <img
-                    className="w-8 h-8"
+                    className="w-6 h-6 md:w-8 md:h-8"
                     style={{ filter: "invert(100%)" }}
                     src={FriendListIcon}
                     alt="notification icon"
@@ -152,7 +151,7 @@ const Navbar = ({
                   </div>
                 )}
               </span>
-              <span ref={notificationsMenu} className="mr-2">
+              <span ref={notificationsMenu} className="">
                 {recievedFriendRequests.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
                 )}
@@ -173,7 +172,7 @@ const Navbar = ({
                 >
                   <span className="sr-only">Open notifications menu</span>
                   <img
-                    className="w-8 h-8 rounded-full"
+                    className="w-6 h-6 md:w-8 md:h-8"
                     style={{ filter: "invert(100%)" }}
                     src={NotificationIcon}
                     alt="notification icon"
@@ -233,7 +232,7 @@ const Navbar = ({
                 )}
               </span>
 
-              <span ref={tradesMenu} className="mr-2">
+              <span ref={tradesMenu} className="">
                 {recievedTradeRequests.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
                 )}
@@ -256,7 +255,7 @@ const Navbar = ({
                 >
                   <span className="sr-only">Open trade requests menu</span>
                   <img
-                    className="w-8 h-8 rounded-full"
+                    className="w-6 h-6 md:w-8 md:h-8"
                     style={{ filter: "invert(100%)" }}
                     src={TradeRequestIcon}
                     alt="trade request icon"
@@ -376,7 +375,7 @@ const Navbar = ({
                       <li>
                         <a
                           href={LOGOUT_URL}
-                          className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                          className="block py-2 px-4 text-sm text-red-700 hover:bg-gray-100 dark:hover:bg-red-600 dark:text-red-600 dark:hover:text-red-100"
                         >
                           Sign out
                         </a>

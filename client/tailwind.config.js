@@ -6,7 +6,6 @@ module.exports = {
         blurple: "#5865F2",
         "dark-blurple": "#454FBF",
         "legacy-dark": "#4E5D94",
-        dark: "#23272A",
       },
     },
   },

@@ -2,6 +2,11 @@ export type Pokemon = {
   id: number;
   name: string;
   spriteUrl: string;
+  types: PokemonType[];
+};
+
+export type PokemonType = {
+  name: string;
 };
 
 export type User = {

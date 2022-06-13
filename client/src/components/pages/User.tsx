@@ -12,6 +12,27 @@ import { useLocalStorageState } from "../../hooks/useLocalStorageState";
 import { useOnClickOutsideElement } from "../../hooks/useOnClickOutsideElement";
 import { FriendRequest, Pokemon, User } from "../../models";
 
+const pokemomTypeColors: Record<string, string> = {
+  normal: "#A8A77A",
+  fire: "#EE8130",
+  water: "#6390F0",
+  electric: "#F7D02C",
+  grass: "#7AC74C",
+  ice: "#96D9D6",
+  fighting: "#C22E28",
+  poison: "#A33EA1",
+  ground: "#E2BF65",
+  flying: "#A98FF3",
+  psychic: "#F95587",
+  bug: "#A6B91A",
+  rock: "#B6A136",
+  ghost: "#735797",
+  dragon: "#6F35FC",
+  dark: "#705746",
+  steel: "#B7B7CE",
+  fairy: "#D685AD",
+};
+
 type UserProps = {
   loggedInUser?: User;
   sentFriendRequests: FriendRequest[];
@@ -141,21 +162,23 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
 
   return (
     <div>
-      <div className="flex justify-between mb-3">
-        <div>
+      <div className="flex justify-between items-center mb-10">
+        <div className="flex gap-1 items-center md:gap-3">
           <img
             src={user.profilePictureUrl}
-            className="w-16 h-16 rounded-full inline-block mr-5"
+            className="w-16 h-16 rounded-full inline-block"
           />
-          <h2 className="text-3xl inline-block">
-            {user.username}'s Pokemon - ({user.ownedPokemon.length} /{" "}
-            {allPokemon.length})
+          <h2 className="text-lg font-semibold whitespace-nowrap md:text-3xl flex flex-col">
+            {user.username}'s Pokemon
+            <span className="text-sm font-light">
+              ({user.ownedPokemon.length} / {allPokemon.length}){" "}
+            </span>
           </h2>
         </div>
         {canInteractWithUser &&
           (friend ? (
             <button
-              className="bg-red-500 p-3 rounded-md text-lg hover:bg-red-600 active:brightness-90"
+              className="w-fit h-fit text-xs bg-red-500 p-3 rounded-md md:text-lg hover:bg-red-600 active:brightness-90 md:w-fit"
               onClick={() => onClickRemoveFriend(friend.id)}
             >
               Remove Friend
@@ -180,68 +203,82 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
       </div>
 
       {(loggedInUser && loggedInUser.id === user.id) || (
-        <div className="flex gap-2 text-lg mb-4">
-          User Filter
-          <button
-            onClick={() => setUserPokemonFilter("all")}
-            className={`cursor-pointer rounded px-4 py-2 ${
-              userPokemonFilter === "all" ? "bg-green-500" : "bg-green-300"
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setUserPokemonFilter("unowned")}
-            className={`cursor-pointer rounded px-4 py-2 ${
-              userPokemonFilter === "unowned" ? "bg-green-500" : "bg-green-300"
-            }`}
-          >
-            Unowned
-          </button>
-          <button
-            onClick={() => setUserPokemonFilter("owned")}
-            className={`cursor-pointer rounded px-4 py-2 ${
-              userPokemonFilter === "owned" ? "bg-green-500" : "bg-green-300"
-            }`}
-          >
-            Owned
-          </button>
+        <div className="md:w-96">
+          <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
+            <p>{user.username}'s Filter</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setUserPokemonFilter("all")}
+                className={`cursor-pointer rounded px-4 py-1 ${
+                  userPokemonFilter === "all"
+                    ? "bg-emerald-500"
+                    : "bg-emerald-300"
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setUserPokemonFilter("unowned")}
+                className={`cursor-pointer rounded px-4 py-1 ${
+                  userPokemonFilter === "unowned"
+                    ? "bg-emerald-500"
+                    : "bg-emerald-300"
+                }`}
+              >
+                Unowned
+              </button>
+              <button
+                onClick={() => setUserPokemonFilter("owned")}
+                className={`cursor-pointer rounded px-4 py-1 ${
+                  userPokemonFilter === "owned"
+                    ? "bg-emerald-500"
+                    : "bg-emerald-300"
+                }`}
+              >
+                Owned
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
       {loggedInUser && (
-        <div className="flex gap-2 text-lg mb-4">
-          Your Filter
-          <button
-            onClick={() => setLoggedInUserPokemonFilter("all")}
-            className={`cursor-pointer rounded px-4 py-2 ${
-              loggedInUserPokemonFilter === "all"
-                ? "bg-green-500"
-                : "bg-green-300"
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setLoggedInUserPokemonFilter("unowned")}
-            className={`cursor-pointer rounded px-4 py-2 ${
-              loggedInUserPokemonFilter === "unowned"
-                ? "bg-green-500"
-                : "bg-green-300"
-            }`}
-          >
-            Unowned
-          </button>
-          <button
-            onClick={() => setLoggedInUserPokemonFilter("owned")}
-            className={`cursor-pointer rounded px-4 py-2 ${
-              loggedInUserPokemonFilter === "owned"
-                ? "bg-green-500"
-                : "bg-green-300"
-            }`}
-          >
-            Owned
-          </button>
+        <div className="w-96">
+          <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
+            Your Filter
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLoggedInUserPokemonFilter("all")}
+                className={`cursor-pointer rounded px-4 py-1 ${
+                  loggedInUserPokemonFilter === "all"
+                    ? "bg-purple-500"
+                    : "bg-purple-300"
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setLoggedInUserPokemonFilter("unowned")}
+                className={`cursor-pointer rounded px-4 py-1 ${
+                  loggedInUserPokemonFilter === "unowned"
+                    ? "bg-purple-500"
+                    : "bg-purple-300"
+                }`}
+              >
+                Unowned
+              </button>
+              <button
+                onClick={() => setLoggedInUserPokemonFilter("owned")}
+                className={`cursor-pointer rounded px-4 py-1 ${
+                  loggedInUserPokemonFilter === "owned"
+                    ? "bg-purple-500"
+                    : "bg-purple-300"
+                }`}
+              >
+                Owned
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -304,10 +341,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
               />
             </div>
             <div className="flex-1">
-              <label
-                htmlFor="countries"
-                className="block mb-2 text-sm font-medium "
-              >
+              <label className="block mb-2 text-sm font-medium ">
                 {user.username}'s Pokemon
               </label>
               <Select
@@ -360,13 +394,21 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 ">
+      <div className="bg-white p-6 rounded-md grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 ">
         {allPokemon.length === 0 ? (
           <div>loading...</div>
         ) : (
-          pokemons.map(({ id, name, spriteUrl }) => (
+          pokemons.map(({ id, name, spriteUrl, types }) => (
             <div
-              className="bg-slate-100 text-black rounded-lg flex flex-col p-1 cursor-pointer outline hover:outline-2 outline-0 outline-black"
+              className={`text-black rounded-lg flex flex-col p-1 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
+              style={{
+                background:
+                  types.length === 2
+                    ? `linear-gradient(to bottom right, ${
+                        pokemomTypeColors[types[0].name]
+                      } 50%, ${pokemomTypeColors[types[1].name]} 50%)`
+                    : pokemomTypeColors[types[0].name],
+              }}
               key={id}
               onClick={() => {
                 if (canInteractWithUser) {
@@ -375,6 +417,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
               }}
             >
               <h2 className="text-center text-2xl">{name}</h2>
+
               <img
                 className={`${
                   !userOwnsPokemon(id) && "brightness-0"
