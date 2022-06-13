@@ -51,11 +51,8 @@ const filteredPokemon = (
   userOwnsPokemon: (id: number) => boolean
 ): Pokemon[] => {
   let pokemon = allPokemon;
-  if (!loggedInUser) {
+  if (!loggedInUser || loggedInUser.id === user.id) {
     loggedInUserPokemonFilter = "all";
-  }
-  if (loggedInUser && loggedInUser.id === user.id) {
-    userPokemonFilter = "all";
   }
   switch (loggedInUserPokemonFilter) {
     case "all":
@@ -203,47 +200,45 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
           ))}
       </div>
 
-      {(loggedInUser && loggedInUser.id === user.id) || (
-        <div className="md:w-96">
-          <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
-            <p>{user.username}'s Filter</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setUserPokemonFilter("all")}
-                className={`cursor-pointer rounded px-4 py-1 ${
-                  userPokemonFilter === "all"
-                    ? "bg-emerald-500"
-                    : "bg-emerald-300"
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setUserPokemonFilter("unowned")}
-                className={`cursor-pointer rounded px-4 py-1 ${
-                  userPokemonFilter === "unowned"
-                    ? "bg-emerald-500"
-                    : "bg-emerald-300"
-                }`}
-              >
-                Unowned
-              </button>
-              <button
-                onClick={() => setUserPokemonFilter("owned")}
-                className={`cursor-pointer rounded px-4 py-1 ${
-                  userPokemonFilter === "owned"
-                    ? "bg-emerald-500"
-                    : "bg-emerald-300"
-                }`}
-              >
-                Owned
-              </button>
-            </div>
+      <div className="w-96">
+        <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
+          <p>{user.username}'s Filter</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setUserPokemonFilter("all")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                userPokemonFilter === "all"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setUserPokemonFilter("unowned")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                userPokemonFilter === "unowned"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Unowned
+            </button>
+            <button
+              onClick={() => setUserPokemonFilter("owned")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                userPokemonFilter === "owned"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Owned
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
-      {loggedInUser && (
+      {loggedInUser && loggedInUser.id !== user.id && (
         <div className="w-96">
           <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
             Your Filter
