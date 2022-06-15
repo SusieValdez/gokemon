@@ -19,11 +19,11 @@ func (s *Server) GetFriendRequests(c *gin.Context) {
 	s.DB.First(&user, "username = ?", username)
 	sentFriendRequests := []models.FriendRequest{}
 	s.DB.Preload("User").Preload("Friend").Find(&sentFriendRequests, "user_id = ?", user.ID)
-	recievedFriendRequests := []models.FriendRequest{}
-	s.DB.Preload("User").Preload("Friend").Find(&recievedFriendRequests, "friend_id = ?", user.ID)
+	receivedFriendRequests := []models.FriendRequest{}
+	s.DB.Preload("User").Preload("Friend").Find(&receivedFriendRequests, "friend_id = ?", user.ID)
 	c.JSON(http.StatusOK, gin.H{
 		"sent":     sentFriendRequests,
-		"recieved": recievedFriendRequests,
+		"received": receivedFriendRequests,
 	})
 }
 

@@ -4,12 +4,13 @@ import NotificationIcon from "../assets/bell-solid.svg";
 import FriendListIcon from "../assets/user-group-solid.svg";
 import TradeRequestIcon from "../assets/retweet-solid.svg";
 import { FriendRequest, TradeRequest, User } from "../models";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useElementClientRect } from "../hooks/useElementClientRect";
 import { useOnClickOutsideElements } from "../hooks/useOnClickOutsideElement";
 import { deleteFriendRequest } from "../api/friendRequests";
 import { acceptTrade, postFriendship } from "../api/users";
 import { deleteTradeRequest } from "../api/tradeRequests";
+import { Link, useLocation } from "react-router-dom";
 
 function convertSeconds(s: number): string {
   var min = Math.floor(s / 60);
@@ -19,8 +20,14 @@ function convertSeconds(s: number): string {
 
 type NavbarProps = {
   loggedInUser?: User;
-  recievedFriendRequests: FriendRequest[];
-  recievedTradeRequests: TradeRequest[];
+  friendRequests: {
+    sent: FriendRequest[];
+    received: FriendRequest[];
+  };
+  tradeRequests: {
+    sent: TradeRequest[];
+    received: TradeRequest[];
+  };
   secondsRemainingUntilNewPokemon?: number;
 };
 
@@ -28,8 +35,8 @@ type MenuType = "user" | "friends" | "notifications" | "trade-requests";
 
 const Navbar = ({
   loggedInUser,
-  recievedFriendRequests,
-  recievedTradeRequests,
+  friendRequests,
+  tradeRequests,
   secondsRemainingUntilNewPokemon,
 }: NavbarProps) => {
   const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
@@ -45,12 +52,18 @@ const Navbar = ({
   const friendsMenu = useRef<HTMLDivElement>(null);
   const friendsMenuRect = useElementClientRect(friendsMenu);
 
+  const location = useLocation();
+
   useOnClickOutsideElements(
     [userMenu, notificationsMenu, friendsMenu, tradesMenu],
     () => {
       setOpenMenu(undefined);
     }
   );
+
+  useEffect(() => {
+    setOpenMenu(undefined);
+  }, [location]);
 
   const onClickAcceptFriendRequest = async (id: number) => {
     postFriendship(id).then(() => window.location.reload());
@@ -69,14 +82,14 @@ const Navbar = ({
   };
 
   return (
-    <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-800">
+    <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-800 fixed w-full">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
-        <a href="/" className="flex items-center">
+        <Link to="/" className="flex items-center">
           <img src={Pokeball} className="mr-3 h-6 sm:h-9" alt="Logo" />
           <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
             Gokemon
           </span>
-        </a>
+        </Link>
         {secondsRemainingUntilNewPokemon !== undefined && (
           <span>
             {secondsRemainingUntilNewPokemon >= 0 &&
@@ -129,8 +142,8 @@ const Navbar = ({
                         {loggedInUser.friends.map(
                           ({ id, username, profilePictureUrl }) => (
                             <li key={id}>
-                              <a
-                                href={userPageUrl(username)}
+                              <Link
+                                to={userPageUrl(username)}
                                 className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                               >
                                 <img
@@ -138,13 +151,13 @@ const Navbar = ({
                                   className="w-8 h-8 inline mr-2 rounded-full"
                                 />
                                 {username}
-                              </a>
+                              </Link>
                             </li>
                           )
                         )}
                       </ul>
                     ) : (
-                      <div className="py-2 px-4 w-44 text-center">
+                      <div className="py-2 px-4 w-44 text-center text-sm">
                         This is awkward but... you have no friends 😅
                       </div>
                     )}
@@ -152,7 +165,7 @@ const Navbar = ({
                 )}
               </span>
               <span ref={notificationsMenu} className="">
-                {recievedFriendRequests.length > 0 && (
+                {friendRequests.received.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
                 )}
                 <button
@@ -200,14 +213,18 @@ const Navbar = ({
                         Notifications
                       </span>
                     </div>
-                    {recievedFriendRequests.length > 0 ? (
+                    {friendRequests.received.length > 0 ? (
                       <ul className="py-1" aria-labelledby="dropdown">
-                        {recievedFriendRequests.map(({ id, user }) => (
+                        {friendRequests.received.map(({ id, user }) => (
                           <li
                             key={id}
                             className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                           >
-                            <p>{user.username} added you!</p>
+                            <img
+                              src={user.profilePictureUrl}
+                              className="w-8 h-8 inline mr-2 rounded-full"
+                            />
+                            {user.username} added you!
                             <button
                               className="px-2 hover:brightness-75 hover:-translate-y-1"
                               onClick={() => onClickAcceptFriendRequest(id)}
@@ -224,7 +241,7 @@ const Navbar = ({
                         ))}
                       </ul>
                     ) : (
-                      <div className="py-2 px-4 w-44 text-center">
+                      <div className="py-2 px-4 w-44 text-center text-sm">
                         You have no new notifications...
                       </div>
                     )}
@@ -233,7 +250,7 @@ const Navbar = ({
               </span>
 
               <span ref={tradesMenu} className="">
-                {recievedTradeRequests.length > 0 && (
+                {tradeRequests.received.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
                 )}
                 <button
@@ -271,7 +288,10 @@ const Navbar = ({
                       margin: "0px",
                       transform: `translate3d(${
                         tradesMenuRect.x -
-                        (recievedTradeRequests.length > 0 ? 250 : 30)
+                        (tradeRequests.received.length > 0 ||
+                        tradeRequests.sent.length > 0
+                          ? 250
+                          : 30)
                       }px, ${
                         tradesMenuRect.y + tradesMenuRect.height + 20
                       }px, 0px)`,
@@ -282,49 +302,110 @@ const Navbar = ({
                         Trade Requests
                       </span>
                     </div>
-                    {recievedTradeRequests.length > 0 ? (
-                      <ul className="py-1" aria-labelledby="dropdown">
-                        {recievedTradeRequests.map(
-                          ({ id, user, userPokemon, friendPokemon }) => (
-                            <li
-                              key={id}
-                              className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                            >
-                              <p>{user.username} wants to trade with you!</p>
+                    <div className="py-3 px-4">
+                      <span className="block text-sm text-gray-900 dark:text-white">
+                        Sent
+                      </span>
+                      {tradeRequests.sent.length > 0 ? (
+                        <ul className="py-1" aria-labelledby="dropdown">
+                          {tradeRequests.sent.map(
+                            ({ id, friend, userPokemon, friendPokemon }) => (
+                              <li
+                                key={id}
+                                className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                              >
+                                <p>
+                                  <img
+                                    src={friend.profilePictureUrl}
+                                    className="w-8 h-8 inline mr-2 rounded-full"
+                                  />
+                                  You want to trade with {friend.username}!
+                                </p>
 
-                              <div className="flex items-center">
                                 <div className="flex items-center">
-                                  Their
-                                  <img src={userPokemon.spriteUrl} />
-                                  for your
-                                  <img src={friendPokemon.spriteUrl} />
+                                  <div className="flex items-center">
+                                    Their
+                                    <img src={friendPokemon.spriteUrl} />
+                                    for your
+                                    <img src={userPokemon.spriteUrl} />
+                                  </div>
+                                  <div>
+                                    <button
+                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                      onClick={() =>
+                                        onClickDenyTradeRequest(id)
+                                      }
+                                    >
+                                      ❌
+                                    </button>
+                                  </div>
                                 </div>
-                                <div>
-                                  <button
-                                    className="px-2 hover:brightness-75 hover:-translate-y-1"
-                                    onClick={() =>
-                                      onClickAcceptTradeRequest(id)
-                                    }
-                                  >
-                                    ✅
-                                  </button>
-                                  <button
-                                    className="px-2 hover:brightness-75 hover:-translate-y-1"
-                                    onClick={() => onClickDenyTradeRequest(id)}
-                                  >
-                                    ❌
-                                  </button>
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      ) : (
+                        <div className="py-2 px-4 w-44 text-center text-sm">
+                          You haven't sent any trade requests...
+                        </div>
+                      )}
+                    </div>
+                    <div className="py-3 px-4">
+                      <span className="block text-sm text-gray-900 dark:text-white">
+                        Received
+                      </span>
+                      {tradeRequests.received.length > 0 ? (
+                        <ul className="py-1" aria-labelledby="dropdown">
+                          {tradeRequests.received.map(
+                            ({ id, user, userPokemon, friendPokemon }) => (
+                              <li
+                                key={id}
+                                className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                              >
+                                <p>
+                                  <img
+                                    src={user.profilePictureUrl}
+                                    className="w-8 h-8 inline mr-2 rounded-full"
+                                  />
+                                  {user.username} wants to trade with you!
+                                </p>
+
+                                <div className="flex items-center">
+                                  <div className="flex items-center">
+                                    Their
+                                    <img src={userPokemon.spriteUrl} />
+                                    for your
+                                    <img src={friendPokemon.spriteUrl} />
+                                  </div>
+                                  <div>
+                                    <button
+                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                      onClick={() =>
+                                        onClickAcceptTradeRequest(id)
+                                      }
+                                    >
+                                      ✅
+                                    </button>
+                                    <button
+                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                      onClick={() =>
+                                        onClickDenyTradeRequest(id)
+                                      }
+                                    >
+                                      ❌
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    ) : (
-                      <div className="py-2 px-4 w-44 text-center">
-                        You have no new trade requests...
-                      </div>
-                    )}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      ) : (
+                        <div className="py-2 px-4 w-44 text-center text-sm">
+                          You have no new trade requests...
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </span>
@@ -365,12 +446,12 @@ const Navbar = ({
                     </div>
                     <ul className="py-1" aria-labelledby="dropdown">
                       <li>
-                        <a
-                          href={userPageUrl(loggedInUser.username)}
+                        <Link
+                          to={userPageUrl(loggedInUser.username)}
                           className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                         >
                           Profile
-                        </a>
+                        </Link>
                       </li>
                       <li>
                         <a

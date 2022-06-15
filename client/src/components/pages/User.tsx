@@ -7,12 +7,11 @@ import {
 import { getPokemons } from "../../api/pokemon";
 import { postTradeRequest } from "../../api/tradeRequests";
 import { deleteFriendship } from "../../api/users";
-import { useElementClientRect } from "../../hooks/useElementClientRect";
 import { useLocalStorageState } from "../../hooks/useLocalStorageState";
 import { useOnClickOutsideElement } from "../../hooks/useOnClickOutsideElement";
 import { FriendRequest, Pokemon, User } from "../../models";
 
-const pokemomTypeColors: Record<string, string> = {
+const pokemonTypeColors: Record<string, string> = {
   normal: "#A8A77A",
   fire: "#EE8130",
   water: "#6390F0",
@@ -37,6 +36,8 @@ type UserProps = {
   loggedInUser?: User;
   sentFriendRequests: FriendRequest[];
   user: User;
+  loggedInUserOwnsPokemon: (p: Pokemon) => boolean;
+  userOwnsPokemon: (p: Pokemon) => boolean;
 };
 
 type PokemonFilter = "all" | "owned" | "unowned";
@@ -46,9 +47,9 @@ const filteredPokemon = (
   user: User,
   allPokemon: Pokemon[],
   loggedInUserPokemonFilter: PokemonFilter,
-  loggedInUserOwnsPokemon: (id: number) => boolean,
+  loggedInUserOwnsPokemon: (p: Pokemon) => boolean,
   userPokemonFilter: PokemonFilter,
-  userOwnsPokemon: (id: number) => boolean
+  userOwnsPokemon: (p: Pokemon) => boolean
 ): Pokemon[] => {
   let pokemon = allPokemon;
   if (!loggedInUser || loggedInUser.id === user.id) {
@@ -58,26 +59,32 @@ const filteredPokemon = (
     case "all":
       break;
     case "owned":
-      pokemon = pokemon.filter((p) => loggedInUserOwnsPokemon(p.id));
+      pokemon = pokemon.filter((p) => loggedInUserOwnsPokemon(p));
       break;
     case "unowned":
-      pokemon = pokemon.filter((p) => !loggedInUserOwnsPokemon(p.id));
+      pokemon = pokemon.filter((p) => !loggedInUserOwnsPokemon(p));
       break;
   }
   switch (userPokemonFilter) {
     case "all":
       break;
     case "owned":
-      pokemon = pokemon.filter((p) => userOwnsPokemon(p.id));
+      pokemon = pokemon.filter((p) => userOwnsPokemon(p));
       break;
     case "unowned":
-      pokemon = pokemon.filter((p) => !userOwnsPokemon(p.id));
+      pokemon = pokemon.filter((p) => !userOwnsPokemon(p));
       break;
   }
   return pokemon;
 };
 
-function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
+function UserPage({
+  user,
+  loggedInUser,
+  sentFriendRequests,
+  loggedInUserOwnsPokemon,
+  userOwnsPokemon,
+}: UserProps) {
   const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
 
   const [userPokemonFilter, setUserPokemonFilter] =
@@ -85,26 +92,16 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
   const [loggedInUserPokemonFilter, setLoggedInUserPokemonFilter] =
     useLocalStorageState<PokemonFilter>("loggedInUserPokemonFilter", "all");
 
-  const loggedInUserOwnedPokemonMap = (loggedInUser?.ownedPokemon ?? []).reduce(
+  const pokemonMap = allPokemon.reduce(
     (acc, pokemon) => ({
       ...acc,
       [pokemon.id]: pokemon,
     }),
     {} as Record<number, Pokemon>
   );
-  const loggedInUserOwnsPokemon = (id: number) =>
-    loggedInUserOwnedPokemonMap[id] !== undefined;
-  const userOwnedPokemonMap = (user.ownedPokemon ?? []).reduce(
-    (acc, pokemon) => ({
-      ...acc,
-      [pokemon.id]: pokemon,
-    }),
-    {} as Record<number, Pokemon>
-  );
-  const userOwnsPokemon = (id: number) => userOwnedPokemonMap[id] !== undefined;
 
   const [offeredPokemon, setOfferedPokemon] = useState<Pokemon | undefined>(
-    loggedInUser?.ownedPokemon[0]
+    loggedInUser?.ownedPokemon.find((p) => !userOwnsPokemon(p))
   );
   const [wantedPokemon, setWantedPokemon] = useState<Pokemon | undefined>();
 
@@ -192,7 +189,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
             </button>
           ) : (
             <button
-              className="bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
+              className="w-fit h-fit text-xs bg-blurple p-3 rounded-md md:text-lg hover:bg-dark-blurple active:brightness-90 md:w-fit"
               onClick={onClickSendFriendRequest}
             >
               Send friend request
@@ -278,150 +275,160 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
         </div>
       )}
 
-      {loggedInUser && wantedPokemon && offeredPokemon && (
-        <div
-          ref={tradeModal}
-          className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-10 left-4 right-4"
-        >
-          <div className="flex justify-between">
-            <h1 className="text-3xl text-center mb-5">New Trade Request</h1>
-            <span
-              className="text-3xl cursor-pointer hover:brightness-75"
-              onClick={() => setWantedPokemon(undefined)}
-            >
-              ❌
-            </span>
-          </div>
-
-          <div className="flex gap-2 justify-between">
-            <div className="flex-1">
-              <label className="block mb-2 text-sm font-medium ">
-                {loggedInUser.username}'s Pokemon
-              </label>
-              <Select
-                filterOption={createFilter({
-                  ignoreCase: true,
-                  ignoreAccents: true,
-                  matchFrom: "any",
-                  stringify: (option) =>
-                    loggedInUserOwnedPokemonMap[parseInt(option.value)].name,
-                  trim: true,
-                })}
-                options={loggedInUser.ownedPokemon.map((p) => ({
-                  value: p.id,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={p.spriteUrl} />
-                      {p.name}
-                    </div>
-                  ),
-                }))}
-                value={{
-                  value: offeredPokemon.id,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={offeredPokemon.spriteUrl} />
-                      {offeredPokemon.name}
-                    </div>
-                  ),
-                }}
-                onChange={(e) => {
-                  e?.value &&
-                    setOfferedPokemon(loggedInUserOwnedPokemonMap[e.value]);
-                }}
-              />
-              <img
-                src={offeredPokemon.spriteUrl}
-                className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
-                alt="user pokemon"
-              />
+      {loggedInUser &&
+        wantedPokemon &&
+        offeredPokemon &&
+        !loggedInUserOwnsPokemon(wantedPokemon) &&
+        !userOwnsPokemon(offeredPokemon) && (
+          <div
+            ref={tradeModal}
+            className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-10 left-4 right-4"
+          >
+            <div className="flex justify-between">
+              <h1 className="text-3xl text-center mb-5">New Trade Request</h1>
+              <span
+                className="text-3xl cursor-pointer hover:brightness-75"
+                onClick={() => setWantedPokemon(undefined)}
+              >
+                ❌
+              </span>
             </div>
-            <div className="flex-1">
-              <label className="block mb-2 text-sm font-medium ">
-                {user.username}'s Pokemon
-              </label>
-              <Select
-                filterOption={createFilter({
-                  ignoreCase: true,
-                  ignoreAccents: true,
-                  matchFrom: "any",
-                  stringify: (option) =>
-                    userOwnedPokemonMap[parseInt(option.value)].name,
-                  trim: true,
-                })}
-                value={{
-                  value: wantedPokemon.id,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={wantedPokemon.spriteUrl} />
-                      {wantedPokemon.name}
-                    </div>
-                  ),
-                }}
-                options={user.ownedPokemon.map((p) => ({
-                  value: p.id,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={p.spriteUrl} />
-                      {p.name}
-                    </div>
-                  ),
-                }))}
-                onChange={(e) => {
-                  e?.value && setWantedPokemon(userOwnedPokemonMap[e.value]);
-                }}
-              />
-              <img
-                src={wantedPokemon.spriteUrl}
-                className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
-                alt="user pokemon"
-              />
+
+            <div className="flex gap-2 justify-between">
+              <div className="flex-1">
+                <label className="block mb-2 text-sm font-medium ">
+                  {loggedInUser.username}'s Pokemon
+                </label>
+                <Select
+                  filterOption={createFilter({
+                    ignoreCase: true,
+                    ignoreAccents: true,
+                    matchFrom: "any",
+                    stringify: (option) =>
+                      pokemonMap[parseInt(option.value)].name,
+                    trim: true,
+                  })}
+                  options={loggedInUser.ownedPokemon
+                    .filter((p) => !userOwnsPokemon(p))
+                    .map((p) => ({
+                      value: p.id,
+                      label: (
+                        <div className="flex items-center">
+                          <img src={p.spriteUrl} />
+                          {p.name}
+                        </div>
+                      ),
+                    }))}
+                  value={{
+                    value: offeredPokemon.id,
+                    label: (
+                      <div className="flex items-center">
+                        <img src={offeredPokemon.spriteUrl} />
+                        {offeredPokemon.name}
+                      </div>
+                    ),
+                  }}
+                  onChange={(e) => {
+                    e?.value && setOfferedPokemon(pokemonMap[e.value]);
+                  }}
+                />
+                <img
+                  src={offeredPokemon.spriteUrl}
+                  className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
+                  alt="user pokemon"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block mb-2 text-sm font-medium ">
+                  {user.username}'s Pokemon
+                </label>
+                <Select
+                  filterOption={createFilter({
+                    ignoreCase: true,
+                    ignoreAccents: true,
+                    matchFrom: "any",
+                    stringify: (option) =>
+                      pokemonMap[parseInt(option.value)].name,
+                    trim: true,
+                  })}
+                  value={{
+                    value: wantedPokemon.id,
+                    label: (
+                      <div className="flex items-center">
+                        <img src={wantedPokemon.spriteUrl} />
+                        {wantedPokemon.name}
+                      </div>
+                    ),
+                  }}
+                  options={user.ownedPokemon
+                    .filter((p) => !loggedInUserOwnsPokemon(p))
+                    .map((p) => ({
+                      value: p.id,
+                      label: (
+                        <div className="flex items-center">
+                          <img src={p.spriteUrl} />
+                          {p.name}
+                        </div>
+                      ),
+                    }))}
+                  onChange={(e) => {
+                    e?.value && setWantedPokemon(pokemonMap[e.value]);
+                  }}
+                />
+                <img
+                  src={wantedPokemon.spriteUrl}
+                  className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
+                  alt="user pokemon"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                className="text-white bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
+                onClick={onClickSendTradeRequest}
+              >
+                Send Trade Request
+              </button>
             </div>
           </div>
-
-          <div className="flex justify-center">
-            <button
-              className="text-white bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
-              onClick={onClickSendTradeRequest}
-            >
-              Send Trade Request
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
       <div className="bg-white p-6 rounded-md grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 ">
         {allPokemon.length === 0 ? (
           <div>loading...</div>
         ) : (
-          pokemons.map(({ id, name, spriteUrl, types }) => (
-            <div
-              className={`text-black rounded-lg flex flex-col p-1 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
-              style={{
-                background:
-                  types.length === 2
-                    ? `linear-gradient(to bottom right, ${
-                        pokemomTypeColors[types[0].name]
-                      } 50%, ${pokemomTypeColors[types[1].name]} 50%)`
-                    : pokemomTypeColors[types[0].name],
-              }}
-              key={id}
-              onClick={() => {
-                if (canInteractWithUser) {
-                  setWantedPokemon(userOwnedPokemonMap[id]);
-                }
-              }}
-            >
-              <h2 className="text-center text-2xl">{name}</h2>
+          pokemons.map((p) => {
+            const { id, name, spriteUrl, types } = p;
+            return (
+              <div
+                className={`text-black rounded-lg flex flex-col p-1 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
+                style={{
+                  background:
+                    types.length === 2
+                      ? `linear-gradient(to bottom right, ${
+                          pokemonTypeColors[types[0].name]
+                        } 50%, ${pokemonTypeColors[types[1].name]} 50%)`
+                      : pokemonTypeColors[types[0].name],
+                }}
+                key={id}
+                onClick={() => {
+                  if (canInteractWithUser) {
+                    setWantedPokemon(pokemonMap[id]);
+                  }
+                }}
+              >
+                <h2 className="text-center text-2xl">{name}</h2>
 
-              <img
-                className={`${
-                  !userOwnsPokemon(id) && "brightness-0"
-                } [image-rendering:pixelated]`}
-                src={spriteUrl}
-              />
-            </div>
-          ))
+                <img
+                  className={`${
+                    !userOwnsPokemon(p) && "brightness-0"
+                  } [image-rendering:pixelated]`}
+                  src={spriteUrl}
+                />
+              </div>
+            );
+          })
         )}
       </div>
     </div>
