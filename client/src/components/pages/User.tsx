@@ -7,7 +7,6 @@ import {
 import { getPokemons } from "../../api/pokemon";
 import { postTradeRequest } from "../../api/tradeRequests";
 import { deleteFriendship } from "../../api/users";
-import { useElementClientRect } from "../../hooks/useElementClientRect";
 import { useLocalStorageState } from "../../hooks/useLocalStorageState";
 import { useOnClickOutsideElement } from "../../hooks/useOnClickOutsideElement";
 import { FriendRequest, Pokemon, User } from "../../models";
@@ -192,7 +191,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
             </button>
           ) : (
             <button
-              className="bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
+              className="w-fit h-fit text-xs bg-blurple p-3 rounded-md md:text-lg hover:bg-dark-blurple active:brightness-90 md:w-fit"
               onClick={onClickSendFriendRequest}
             >
               Send friend request

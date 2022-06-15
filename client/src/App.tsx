@@ -86,7 +86,7 @@ function App() {
             recievedTradeRequests={tradeRequests.recieved}
             secondsRemainingUntilNewPokemon={secondsRemainingUntilNewPokemon}
           />
-          <div className="p-4 mx-auto">
+          <div className="p-4 mx-auto pt-20">
             <Routes>
               <Route
                 path="*"

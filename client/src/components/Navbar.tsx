@@ -76,7 +76,7 @@ const Navbar = ({
   };
 
   return (
-    <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-800">
+    <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-800 fixed w-full">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
         <Link to="/" className="flex items-center">
           <img src={Pokeball} className="mr-3 h-6 sm:h-9" alt="Logo" />
@@ -214,7 +214,11 @@ const Navbar = ({
                             key={id}
                             className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                           >
-                            <p>{user.username} added you!</p>
+                            <img
+                              src={user.profilePictureUrl}
+                              className="w-8 h-8 inline mr-2 rounded-full"
+                            />
+                            {user.username} added you!
                             <button
                               className="px-2 hover:brightness-75 hover:-translate-y-1"
                               onClick={() => onClickAcceptFriendRequest(id)}
