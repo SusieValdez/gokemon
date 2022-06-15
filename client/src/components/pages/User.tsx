@@ -103,7 +103,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
   const userOwnsPokemon = (id: number) => userOwnedPokemonMap[id] !== undefined;
 
   const [offeredPokemon, setOfferedPokemon] = useState<Pokemon | undefined>(
-    loggedInUser?.ownedPokemon[0]
+    loggedInUser?.ownedPokemon.find((p) => !userOwnsPokemon(p.id))
   );
   const [wantedPokemon, setWantedPokemon] = useState<Pokemon | undefined>();
 
@@ -277,117 +277,125 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
         </div>
       )}
 
-      {loggedInUser && wantedPokemon && offeredPokemon && (
-        <div
-          ref={tradeModal}
-          className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-10 left-4 right-4"
-        >
-          <div className="flex justify-between">
-            <h1 className="text-3xl text-center mb-5">New Trade Request</h1>
-            <span
-              className="text-3xl cursor-pointer hover:brightness-75"
-              onClick={() => setWantedPokemon(undefined)}
-            >
-              ❌
-            </span>
-          </div>
-
-          <div className="flex gap-2 justify-between">
-            <div className="flex-1">
-              <label className="block mb-2 text-sm font-medium ">
-                {loggedInUser.username}'s Pokemon
-              </label>
-              <Select
-                filterOption={createFilter({
-                  ignoreCase: true,
-                  ignoreAccents: true,
-                  matchFrom: "any",
-                  stringify: (option) =>
-                    loggedInUserOwnedPokemonMap[parseInt(option.value)].name,
-                  trim: true,
-                })}
-                options={loggedInUser.ownedPokemon.map((p) => ({
-                  value: p.id,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={p.spriteUrl} />
-                      {p.name}
-                    </div>
-                  ),
-                }))}
-                value={{
-                  value: offeredPokemon.id,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={offeredPokemon.spriteUrl} />
-                      {offeredPokemon.name}
-                    </div>
-                  ),
-                }}
-                onChange={(e) => {
-                  e?.value &&
-                    setOfferedPokemon(loggedInUserOwnedPokemonMap[e.value]);
-                }}
-              />
-              <img
-                src={offeredPokemon.spriteUrl}
-                className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
-                alt="user pokemon"
-              />
+      {loggedInUser &&
+        wantedPokemon &&
+        offeredPokemon &&
+        !loggedInUserOwnsPokemon(wantedPokemon.id) &&
+        !userOwnsPokemon(offeredPokemon.id) && (
+          <div
+            ref={tradeModal}
+            className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-10 left-4 right-4"
+          >
+            <div className="flex justify-between">
+              <h1 className="text-3xl text-center mb-5">New Trade Request</h1>
+              <span
+                className="text-3xl cursor-pointer hover:brightness-75"
+                onClick={() => setWantedPokemon(undefined)}
+              >
+                ❌
+              </span>
             </div>
-            <div className="flex-1">
-              <label className="block mb-2 text-sm font-medium ">
-                {user.username}'s Pokemon
-              </label>
-              <Select
-                filterOption={createFilter({
-                  ignoreCase: true,
-                  ignoreAccents: true,
-                  matchFrom: "any",
-                  stringify: (option) =>
-                    userOwnedPokemonMap[parseInt(option.value)].name,
-                  trim: true,
-                })}
-                value={{
-                  value: wantedPokemon.id,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={wantedPokemon.spriteUrl} />
-                      {wantedPokemon.name}
-                    </div>
-                  ),
-                }}
-                options={user.ownedPokemon.map((p) => ({
-                  value: p.id,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={p.spriteUrl} />
-                      {p.name}
-                    </div>
-                  ),
-                }))}
-                onChange={(e) => {
-                  e?.value && setWantedPokemon(userOwnedPokemonMap[e.value]);
-                }}
-              />
-              <img
-                src={wantedPokemon.spriteUrl}
-                className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
-                alt="user pokemon"
-              />
+
+            <div className="flex gap-2 justify-between">
+              <div className="flex-1">
+                <label className="block mb-2 text-sm font-medium ">
+                  {loggedInUser.username}'s Pokemon
+                </label>
+                <Select
+                  filterOption={createFilter({
+                    ignoreCase: true,
+                    ignoreAccents: true,
+                    matchFrom: "any",
+                    stringify: (option) =>
+                      loggedInUserOwnedPokemonMap[parseInt(option.value)].name,
+                    trim: true,
+                  })}
+                  options={loggedInUser.ownedPokemon
+                    .filter((p) => !userOwnsPokemon(p.id))
+                    .map((p) => ({
+                      value: p.id,
+                      label: (
+                        <div className="flex items-center">
+                          <img src={p.spriteUrl} />
+                          {p.name}
+                        </div>
+                      ),
+                    }))}
+                  value={{
+                    value: offeredPokemon.id,
+                    label: (
+                      <div className="flex items-center">
+                        <img src={offeredPokemon.spriteUrl} />
+                        {offeredPokemon.name}
+                      </div>
+                    ),
+                  }}
+                  onChange={(e) => {
+                    e?.value &&
+                      setOfferedPokemon(loggedInUserOwnedPokemonMap[e.value]);
+                  }}
+                />
+                <img
+                  src={offeredPokemon.spriteUrl}
+                  className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
+                  alt="user pokemon"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block mb-2 text-sm font-medium ">
+                  {user.username}'s Pokemon
+                </label>
+                <Select
+                  filterOption={createFilter({
+                    ignoreCase: true,
+                    ignoreAccents: true,
+                    matchFrom: "any",
+                    stringify: (option) =>
+                      userOwnedPokemonMap[parseInt(option.value)].name,
+                    trim: true,
+                  })}
+                  value={{
+                    value: wantedPokemon.id,
+                    label: (
+                      <div className="flex items-center">
+                        <img src={wantedPokemon.spriteUrl} />
+                        {wantedPokemon.name}
+                      </div>
+                    ),
+                  }}
+                  options={user.ownedPokemon
+                    .filter((p) => !loggedInUserOwnsPokemon(p.id))
+                    .map((p) => ({
+                      value: p.id,
+                      label: (
+                        <div className="flex items-center">
+                          <img src={p.spriteUrl} />
+                          {p.name}
+                        </div>
+                      ),
+                    }))}
+                  onChange={(e) => {
+                    e?.value && setWantedPokemon(userOwnedPokemonMap[e.value]);
+                  }}
+                />
+                <img
+                  src={wantedPokemon.spriteUrl}
+                  className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
+                  alt="user pokemon"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                className="text-white bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
+                onClick={onClickSendTradeRequest}
+              >
+                Send Trade Request
+              </button>
             </div>
           </div>
-
-          <div className="flex justify-center">
-            <button
-              className="text-white bg-blurple p-3 rounded-md text-lg hover:bg-dark-blurple active:brightness-90"
-              onClick={onClickSendTradeRequest}
-            >
-              Send Trade Request
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
       <div className="bg-white p-6 rounded-md grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 ">
         {allPokemon.length === 0 ? (
