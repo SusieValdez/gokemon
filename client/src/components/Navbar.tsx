@@ -22,11 +22,11 @@ type NavbarProps = {
   loggedInUser?: User;
   friendRequests: {
     sent: FriendRequest[];
-    recieved: FriendRequest[];
+    received: FriendRequest[];
   };
   tradeRequests: {
     sent: TradeRequest[];
-    recieved: TradeRequest[];
+    received: TradeRequest[];
   };
   secondsRemainingUntilNewPokemon?: number;
 };
@@ -165,7 +165,7 @@ const Navbar = ({
                 )}
               </span>
               <span ref={notificationsMenu} className="">
-                {friendRequests.recieved.length > 0 && (
+                {friendRequests.received.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
                 )}
                 <button
@@ -213,9 +213,9 @@ const Navbar = ({
                         Notifications
                       </span>
                     </div>
-                    {friendRequests.recieved.length > 0 ? (
+                    {friendRequests.received.length > 0 ? (
                       <ul className="py-1" aria-labelledby="dropdown">
-                        {friendRequests.recieved.map(({ id, user }) => (
+                        {friendRequests.received.map(({ id, user }) => (
                           <li
                             key={id}
                             className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
@@ -250,7 +250,7 @@ const Navbar = ({
               </span>
 
               <span ref={tradesMenu} className="">
-                {tradeRequests.recieved.length > 0 && (
+                {tradeRequests.received.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
                 )}
                 <button
@@ -288,7 +288,7 @@ const Navbar = ({
                       margin: "0px",
                       transform: `translate3d(${
                         tradesMenuRect.x -
-                        (tradeRequests.recieved.length > 0 ||
+                        (tradeRequests.received.length > 0 ||
                         tradeRequests.sent.length > 0
                           ? 250
                           : 30)
@@ -352,11 +352,11 @@ const Navbar = ({
                     </div>
                     <div className="py-3 px-4">
                       <span className="block text-sm text-gray-900 dark:text-white">
-                        Recieved
+                        Received
                       </span>
-                      {tradeRequests.recieved.length > 0 ? (
+                      {tradeRequests.received.length > 0 ? (
                         <ul className="py-1" aria-labelledby="dropdown">
-                          {tradeRequests.recieved.map(
+                          {tradeRequests.received.map(
                             ({ id, user, userPokemon, friendPokemon }) => (
                               <li
                                 key={id}

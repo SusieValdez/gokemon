@@ -11,7 +11,7 @@ import { useLocalStorageState } from "../../hooks/useLocalStorageState";
 import { useOnClickOutsideElement } from "../../hooks/useOnClickOutsideElement";
 import { FriendRequest, Pokemon, User } from "../../models";
 
-const pokemomTypeColors: Record<string, string> = {
+const pokemonTypeColors: Record<string, string> = {
   normal: "#A8A77A",
   fire: "#EE8130",
   water: "#6390F0",
@@ -400,9 +400,9 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
                 background:
                   types.length === 2
                     ? `linear-gradient(to bottom right, ${
-                        pokemomTypeColors[types[0].name]
-                      } 50%, ${pokemomTypeColors[types[1].name]} 50%)`
-                    : pokemomTypeColors[types[0].name],
+                        pokemonTypeColors[types[0].name]
+                      } 50%, ${pokemonTypeColors[types[1].name]} 50%)`
+                    : pokemonTypeColors[types[0].name],
               }}
               key={id}
               onClick={() => {

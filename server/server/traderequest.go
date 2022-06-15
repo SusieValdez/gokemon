@@ -23,15 +23,15 @@ func (s *Server) GetTradeRequests(c *gin.Context) {
 		Preload("Friend").
 		Preload("FriendPokemon").
 		Find(&sentTradeRequests, "user_id = ?", user.ID)
-	recievedTradeRequests := []models.TradeRequest{}
+	receivedTradeRequests := []models.TradeRequest{}
 	s.DB.Preload("User").
 		Preload("UserPokemon").
 		Preload("Friend").
 		Preload("FriendPokemon").
-		Find(&recievedTradeRequests, "friend_id = ?", user.ID)
+		Find(&receivedTradeRequests, "friend_id = ?", user.ID)
 	c.JSON(http.StatusOK, gin.H{
 		"sent":     sentTradeRequests,
-		"recieved": recievedTradeRequests,
+		"received": receivedTradeRequests,
 	})
 }
 

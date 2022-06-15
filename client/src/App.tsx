@@ -27,13 +27,13 @@ function App() {
 
   const [friendRequests, setFriendRequests] = useState<{
     sent: FriendRequest[];
-    recieved: FriendRequest[];
-  }>({ sent: [], recieved: [] });
+    received: FriendRequest[];
+  }>({ sent: [], received: [] });
 
   const [tradeRequests, setTradeRequests] = useState<{
     sent: TradeRequest[];
-    recieved: TradeRequest[];
-  }>({ sent: [], recieved: [] });
+    received: TradeRequest[];
+  }>({ sent: [], received: [] });
 
   const [pendingPokemon, setPendingPokemon] = useState<Pokemon[]>([]);
   const [secondsRemainingUntilNewPokemon, setSecondsRemainingUntilNewPokemon] =
