@@ -144,7 +144,9 @@ function App() {
                       </span>
                     )}
                     <img
-                      className="w-full [image-rendering:pixelated] "
+                      className={`w-full [image-rendering:pixelated] ${
+                        loggedInUserOwnsPokemon(p) && "grayscale"
+                      }`}
                       src={p.spriteUrl}
                     />
                   </div>
