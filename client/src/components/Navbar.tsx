@@ -4,12 +4,13 @@ import NotificationIcon from "../assets/bell-solid.svg";
 import FriendListIcon from "../assets/user-group-solid.svg";
 import TradeRequestIcon from "../assets/retweet-solid.svg";
 import { FriendRequest, TradeRequest, User } from "../models";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useElementClientRect } from "../hooks/useElementClientRect";
 import { useOnClickOutsideElements } from "../hooks/useOnClickOutsideElement";
 import { deleteFriendRequest } from "../api/friendRequests";
 import { acceptTrade, postFriendship } from "../api/users";
 import { deleteTradeRequest } from "../api/tradeRequests";
+import { Link, useLocation } from "react-router-dom";
 
 function convertSeconds(s: number): string {
   var min = Math.floor(s / 60);
@@ -45,12 +46,18 @@ const Navbar = ({
   const friendsMenu = useRef<HTMLDivElement>(null);
   const friendsMenuRect = useElementClientRect(friendsMenu);
 
+  const location = useLocation();
+
   useOnClickOutsideElements(
     [userMenu, notificationsMenu, friendsMenu, tradesMenu],
     () => {
       setOpenMenu(undefined);
     }
   );
+
+  useEffect(() => {
+    setOpenMenu(undefined);
+  }, [location]);
 
   const onClickAcceptFriendRequest = async (id: number) => {
     postFriendship(id).then(() => window.location.reload());
@@ -71,12 +78,12 @@ const Navbar = ({
   return (
     <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-800">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
-        <a href="/" className="flex items-center">
+        <Link to="/" className="flex items-center">
           <img src={Pokeball} className="mr-3 h-6 sm:h-9" alt="Logo" />
           <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
             Gokemon
           </span>
-        </a>
+        </Link>
         {secondsRemainingUntilNewPokemon !== undefined && (
           <span>
             {secondsRemainingUntilNewPokemon >= 0 &&
@@ -129,8 +136,8 @@ const Navbar = ({
                         {loggedInUser.friends.map(
                           ({ id, username, profilePictureUrl }) => (
                             <li key={id}>
-                              <a
-                                href={userPageUrl(username)}
+                              <Link
+                                to={userPageUrl(username)}
                                 className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                               >
                                 <img
@@ -138,7 +145,7 @@ const Navbar = ({
                                   className="w-8 h-8 inline mr-2 rounded-full"
                                 />
                                 {username}
-                              </a>
+                              </Link>
                             </li>
                           )
                         )}
@@ -365,12 +372,12 @@ const Navbar = ({
                     </div>
                     <ul className="py-1" aria-labelledby="dropdown">
                       <li>
-                        <a
-                          href={userPageUrl(loggedInUser.username)}
+                        <Link
+                          to={userPageUrl(loggedInUser.username)}
                           className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                         >
                           Profile
-                        </a>
+                        </Link>
                       </li>
                       <li>
                         <a

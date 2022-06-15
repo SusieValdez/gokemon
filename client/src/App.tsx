@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { getFriendRequests } from "./api/friendRequests";
 import { getPendingPokemons, selectPokemon } from "./api/pokemon";
 import { getTradeRequests } from "./api/tradeRequests";
@@ -10,17 +11,19 @@ import { FriendRequest, Pokemon, TradeRequest, UserSession } from "./models";
 
 function App() {
   const [userSession, setUserSession] = useState<UserSession>();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const userId = location.pathname.slice(1);
     getUser(userId).then((userSession) => {
       if (userSession?.loggedInUser && !userSession.user) {
-        location.pathname = `/${userSession.loggedInUser.username}`;
+        navigate(`/${userSession.loggedInUser.username}`, { replace: true });
         return;
       }
       setUserSession(userSession);
     });
-  }, []);
+  }, [location]);
 
   const [friendRequests, setFriendRequests] = useState<{
     sent: FriendRequest[];
@@ -84,15 +87,22 @@ function App() {
             secondsRemainingUntilNewPokemon={secondsRemainingUntilNewPokemon}
           />
           <div className="p-4 mx-auto">
-            {userSession.user ? (
-              <UserPage
-                loggedInUser={userSession.loggedInUser}
-                sentFriendRequests={friendRequests.sent}
-                user={userSession.user}
+            <Routes>
+              <Route
+                path="*"
+                element={
+                  userSession?.user ? (
+                    <UserPage
+                      loggedInUser={userSession.loggedInUser}
+                      sentFriendRequests={friendRequests.sent}
+                      user={userSession.user}
+                    />
+                  ) : (
+                    <HomePage />
+                  )
+                }
               />
-            ) : (
-              <HomePage />
-            )}
+            </Routes>
           </div>
           {pendingPokemon.length > 0 && (
             <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4">
