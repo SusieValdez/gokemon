@@ -301,7 +301,13 @@ const Navbar = ({
                               key={id}
                               className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                             >
-                              <p>{user.username} wants to trade with you!</p>
+                              <p>
+                                <img
+                                  src={user.profilePictureUrl}
+                                  className="w-8 h-8 inline mr-2 rounded-full"
+                                />
+                                {user.username} wants to trade with you!
+                              </p>
 
                               <div className="flex items-center">
                                 <div className="flex items-center">
