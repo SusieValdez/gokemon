@@ -122,7 +122,7 @@ const Navbar = ({
 
                 {openMenu === "friends" && (
                   <div
-                    className="z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
                     style={{
                       position: "absolute",
                       inset: "0px auto auto 0px",
@@ -194,7 +194,7 @@ const Navbar = ({
 
                 {openMenu === "notifications" && (
                   <div
-                    className="z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
                     style={{
                       position: "absolute",
                       inset: "0px auto auto 0px",
@@ -281,7 +281,7 @@ const Navbar = ({
 
                 {openMenu === "trade-requests" && (
                   <div
-                    className="z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
                     style={{
                       position: "absolute",
                       inset: "0px auto auto 0px",
@@ -429,7 +429,7 @@ const Navbar = ({
 
                 {openMenu === "user" && (
                   <div
-                    className="z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
                     style={{
                       position: "absolute",
                       inset: "0px auto auto 0px",
