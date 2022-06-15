@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import Select, { createFilter } from "react-select";
 import {
   deleteFriendRequest,
@@ -120,6 +121,12 @@ function UserPage({
   useOnClickOutsideElement(tradeModal, () => {
     setWantedPokemon(undefined);
   });
+
+  useEffect(() => {
+    setOfferedPokemon(
+      loggedInUser?.ownedPokemon.find((p) => !userOwnsPokemon(p))
+    );
+  }, [user]);
 
   useEffect(() => {
     getPokemons().then((pokemons) => setAllPokemon(pokemons));
