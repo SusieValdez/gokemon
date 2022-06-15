@@ -20,8 +20,14 @@ function convertSeconds(s: number): string {
 
 type NavbarProps = {
   loggedInUser?: User;
-  recievedFriendRequests: FriendRequest[];
-  recievedTradeRequests: TradeRequest[];
+  friendRequests: {
+    sent: FriendRequest[];
+    recieved: FriendRequest[];
+  };
+  tradeRequests: {
+    sent: TradeRequest[];
+    recieved: TradeRequest[];
+  };
   secondsRemainingUntilNewPokemon?: number;
 };
 
@@ -29,8 +35,8 @@ type MenuType = "user" | "friends" | "notifications" | "trade-requests";
 
 const Navbar = ({
   loggedInUser,
-  recievedFriendRequests,
-  recievedTradeRequests,
+  friendRequests,
+  tradeRequests,
   secondsRemainingUntilNewPokemon,
 }: NavbarProps) => {
   const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
@@ -151,7 +157,7 @@ const Navbar = ({
                         )}
                       </ul>
                     ) : (
-                      <div className="py-2 px-4 w-44 text-center">
+                      <div className="py-2 px-4 w-44 text-center text-sm">
                         This is awkward but... you have no friends 😅
                       </div>
                     )}
@@ -159,7 +165,7 @@ const Navbar = ({
                 )}
               </span>
               <span ref={notificationsMenu} className="">
-                {recievedFriendRequests.length > 0 && (
+                {friendRequests.recieved.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
                 )}
                 <button
@@ -207,9 +213,9 @@ const Navbar = ({
                         Notifications
                       </span>
                     </div>
-                    {recievedFriendRequests.length > 0 ? (
+                    {friendRequests.recieved.length > 0 ? (
                       <ul className="py-1" aria-labelledby="dropdown">
-                        {recievedFriendRequests.map(({ id, user }) => (
+                        {friendRequests.recieved.map(({ id, user }) => (
                           <li
                             key={id}
                             className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
@@ -235,7 +241,7 @@ const Navbar = ({
                         ))}
                       </ul>
                     ) : (
-                      <div className="py-2 px-4 w-44 text-center">
+                      <div className="py-2 px-4 w-44 text-center text-sm">
                         You have no new notifications...
                       </div>
                     )}
@@ -244,7 +250,7 @@ const Navbar = ({
               </span>
 
               <span ref={tradesMenu} className="">
-                {recievedTradeRequests.length > 0 && (
+                {tradeRequests.recieved.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
                 )}
                 <button
@@ -282,7 +288,10 @@ const Navbar = ({
                       margin: "0px",
                       transform: `translate3d(${
                         tradesMenuRect.x -
-                        (recievedTradeRequests.length > 0 ? 250 : 30)
+                        (tradeRequests.recieved.length > 0 ||
+                        tradeRequests.sent.length > 0
+                          ? 250
+                          : 30)
                       }px, ${
                         tradesMenuRect.y + tradesMenuRect.height + 20
                       }px, 0px)`,
@@ -293,55 +302,110 @@ const Navbar = ({
                         Trade Requests
                       </span>
                     </div>
-                    {recievedTradeRequests.length > 0 ? (
-                      <ul className="py-1" aria-labelledby="dropdown">
-                        {recievedTradeRequests.map(
-                          ({ id, user, userPokemon, friendPokemon }) => (
-                            <li
-                              key={id}
-                              className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                            >
-                              <p>
-                                <img
-                                  src={user.profilePictureUrl}
-                                  className="w-8 h-8 inline mr-2 rounded-full"
-                                />
-                                {user.username} wants to trade with you!
-                              </p>
+                    <div className="py-3 px-4">
+                      <span className="block text-sm text-gray-900 dark:text-white">
+                        Sent
+                      </span>
+                      {tradeRequests.sent.length > 0 ? (
+                        <ul className="py-1" aria-labelledby="dropdown">
+                          {tradeRequests.sent.map(
+                            ({ id, friend, userPokemon, friendPokemon }) => (
+                              <li
+                                key={id}
+                                className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                              >
+                                <p>
+                                  <img
+                                    src={friend.profilePictureUrl}
+                                    className="w-8 h-8 inline mr-2 rounded-full"
+                                  />
+                                  You want to trade with {friend.username}!
+                                </p>
 
-                              <div className="flex items-center">
                                 <div className="flex items-center">
-                                  Their
-                                  <img src={userPokemon.spriteUrl} />
-                                  for your
-                                  <img src={friendPokemon.spriteUrl} />
+                                  <div className="flex items-center">
+                                    Their
+                                    <img src={friendPokemon.spriteUrl} />
+                                    for your
+                                    <img src={userPokemon.spriteUrl} />
+                                  </div>
+                                  <div>
+                                    <button
+                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                      onClick={() =>
+                                        onClickDenyTradeRequest(id)
+                                      }
+                                    >
+                                      ❌
+                                    </button>
+                                  </div>
                                 </div>
-                                <div>
-                                  <button
-                                    className="px-2 hover:brightness-75 hover:-translate-y-1"
-                                    onClick={() =>
-                                      onClickAcceptTradeRequest(id)
-                                    }
-                                  >
-                                    ✅
-                                  </button>
-                                  <button
-                                    className="px-2 hover:brightness-75 hover:-translate-y-1"
-                                    onClick={() => onClickDenyTradeRequest(id)}
-                                  >
-                                    ❌
-                                  </button>
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      ) : (
+                        <div className="py-2 px-4 w-44 text-center text-sm">
+                          You haven't sent any trade requests...
+                        </div>
+                      )}
+                    </div>
+                    <div className="py-3 px-4">
+                      <span className="block text-sm text-gray-900 dark:text-white">
+                        Recieved
+                      </span>
+                      {tradeRequests.recieved.length > 0 ? (
+                        <ul className="py-1" aria-labelledby="dropdown">
+                          {tradeRequests.recieved.map(
+                            ({ id, user, userPokemon, friendPokemon }) => (
+                              <li
+                                key={id}
+                                className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                              >
+                                <p>
+                                  <img
+                                    src={user.profilePictureUrl}
+                                    className="w-8 h-8 inline mr-2 rounded-full"
+                                  />
+                                  {user.username} wants to trade with you!
+                                </p>
+
+                                <div className="flex items-center">
+                                  <div className="flex items-center">
+                                    Their
+                                    <img src={userPokemon.spriteUrl} />
+                                    for your
+                                    <img src={friendPokemon.spriteUrl} />
+                                  </div>
+                                  <div>
+                                    <button
+                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                      onClick={() =>
+                                        onClickAcceptTradeRequest(id)
+                                      }
+                                    >
+                                      ✅
+                                    </button>
+                                    <button
+                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                      onClick={() =>
+                                        onClickDenyTradeRequest(id)
+                                      }
+                                    >
+                                      ❌
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    ) : (
-                      <div className="py-2 px-4 w-44 text-center">
-                        You have no new trade requests...
-                      </div>
-                    )}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      ) : (
+                        <div className="py-2 px-4 w-44 text-center text-sm">
+                          You have no new trade requests...
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </span>

@@ -82,8 +82,8 @@ function App() {
         <div>
           <Navbar
             loggedInUser={userSession.loggedInUser}
-            recievedFriendRequests={friendRequests.recieved}
-            recievedTradeRequests={tradeRequests.recieved}
+            friendRequests={friendRequests}
+            tradeRequests={tradeRequests}
             secondsRemainingUntilNewPokemon={secondsRemainingUntilNewPokemon}
           />
           <div className="p-4 mx-auto pt-20">
