@@ -36,6 +36,8 @@ type UserProps = {
   loggedInUser?: User;
   sentFriendRequests: FriendRequest[];
   user: User;
+  loggedInUserOwnsPokemon: (p: Pokemon) => boolean;
+  userOwnsPokemon: (p: Pokemon) => boolean;
 };
 
 type PokemonFilter = "all" | "owned" | "unowned";
@@ -45,9 +47,9 @@ const filteredPokemon = (
   user: User,
   allPokemon: Pokemon[],
   loggedInUserPokemonFilter: PokemonFilter,
-  loggedInUserOwnsPokemon: (id: number) => boolean,
+  loggedInUserOwnsPokemon: (p: Pokemon) => boolean,
   userPokemonFilter: PokemonFilter,
-  userOwnsPokemon: (id: number) => boolean
+  userOwnsPokemon: (p: Pokemon) => boolean
 ): Pokemon[] => {
   let pokemon = allPokemon;
   if (!loggedInUser || loggedInUser.id === user.id) {
@@ -57,26 +59,32 @@ const filteredPokemon = (
     case "all":
       break;
     case "owned":
-      pokemon = pokemon.filter((p) => loggedInUserOwnsPokemon(p.id));
+      pokemon = pokemon.filter((p) => loggedInUserOwnsPokemon(p));
       break;
     case "unowned":
-      pokemon = pokemon.filter((p) => !loggedInUserOwnsPokemon(p.id));
+      pokemon = pokemon.filter((p) => !loggedInUserOwnsPokemon(p));
       break;
   }
   switch (userPokemonFilter) {
     case "all":
       break;
     case "owned":
-      pokemon = pokemon.filter((p) => userOwnsPokemon(p.id));
+      pokemon = pokemon.filter((p) => userOwnsPokemon(p));
       break;
     case "unowned":
-      pokemon = pokemon.filter((p) => !userOwnsPokemon(p.id));
+      pokemon = pokemon.filter((p) => !userOwnsPokemon(p));
       break;
   }
   return pokemon;
 };
 
-function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
+function UserPage({
+  user,
+  loggedInUser,
+  sentFriendRequests,
+  loggedInUserOwnsPokemon,
+  userOwnsPokemon,
+}: UserProps) {
   const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
 
   const [userPokemonFilter, setUserPokemonFilter] =
@@ -84,26 +92,16 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
   const [loggedInUserPokemonFilter, setLoggedInUserPokemonFilter] =
     useLocalStorageState<PokemonFilter>("loggedInUserPokemonFilter", "all");
 
-  const loggedInUserOwnedPokemonMap = (loggedInUser?.ownedPokemon ?? []).reduce(
+  const pokemonMap = allPokemon.reduce(
     (acc, pokemon) => ({
       ...acc,
       [pokemon.id]: pokemon,
     }),
     {} as Record<number, Pokemon>
   );
-  const loggedInUserOwnsPokemon = (id: number) =>
-    loggedInUserOwnedPokemonMap[id] !== undefined;
-  const userOwnedPokemonMap = (user.ownedPokemon ?? []).reduce(
-    (acc, pokemon) => ({
-      ...acc,
-      [pokemon.id]: pokemon,
-    }),
-    {} as Record<number, Pokemon>
-  );
-  const userOwnsPokemon = (id: number) => userOwnedPokemonMap[id] !== undefined;
 
   const [offeredPokemon, setOfferedPokemon] = useState<Pokemon | undefined>(
-    loggedInUser?.ownedPokemon.find((p) => !userOwnsPokemon(p.id))
+    loggedInUser?.ownedPokemon.find((p) => !userOwnsPokemon(p))
   );
   const [wantedPokemon, setWantedPokemon] = useState<Pokemon | undefined>();
 
@@ -280,8 +278,8 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
       {loggedInUser &&
         wantedPokemon &&
         offeredPokemon &&
-        !loggedInUserOwnsPokemon(wantedPokemon.id) &&
-        !userOwnsPokemon(offeredPokemon.id) && (
+        !loggedInUserOwnsPokemon(wantedPokemon) &&
+        !userOwnsPokemon(offeredPokemon) && (
           <div
             ref={tradeModal}
             className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-10 left-4 right-4"
@@ -307,11 +305,11 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
                     ignoreAccents: true,
                     matchFrom: "any",
                     stringify: (option) =>
-                      loggedInUserOwnedPokemonMap[parseInt(option.value)].name,
+                      pokemonMap[parseInt(option.value)].name,
                     trim: true,
                   })}
                   options={loggedInUser.ownedPokemon
-                    .filter((p) => !userOwnsPokemon(p.id))
+                    .filter((p) => !userOwnsPokemon(p))
                     .map((p) => ({
                       value: p.id,
                       label: (
@@ -331,8 +329,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
                     ),
                   }}
                   onChange={(e) => {
-                    e?.value &&
-                      setOfferedPokemon(loggedInUserOwnedPokemonMap[e.value]);
+                    e?.value && setOfferedPokemon(pokemonMap[e.value]);
                   }}
                 />
                 <img
@@ -351,7 +348,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
                     ignoreAccents: true,
                     matchFrom: "any",
                     stringify: (option) =>
-                      userOwnedPokemonMap[parseInt(option.value)].name,
+                      pokemonMap[parseInt(option.value)].name,
                     trim: true,
                   })}
                   value={{
@@ -364,7 +361,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
                     ),
                   }}
                   options={user.ownedPokemon
-                    .filter((p) => !loggedInUserOwnsPokemon(p.id))
+                    .filter((p) => !loggedInUserOwnsPokemon(p))
                     .map((p) => ({
                       value: p.id,
                       label: (
@@ -375,7 +372,7 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
                       ),
                     }))}
                   onChange={(e) => {
-                    e?.value && setWantedPokemon(userOwnedPokemonMap[e.value]);
+                    e?.value && setWantedPokemon(pokemonMap[e.value]);
                   }}
                 />
                 <img
@@ -401,34 +398,37 @@ function UserPage({ user, loggedInUser, sentFriendRequests }: UserProps) {
         {allPokemon.length === 0 ? (
           <div>loading...</div>
         ) : (
-          pokemons.map(({ id, name, spriteUrl, types }) => (
-            <div
-              className={`text-black rounded-lg flex flex-col p-1 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
-              style={{
-                background:
-                  types.length === 2
-                    ? `linear-gradient(to bottom right, ${
-                        pokemonTypeColors[types[0].name]
-                      } 50%, ${pokemonTypeColors[types[1].name]} 50%)`
-                    : pokemonTypeColors[types[0].name],
-              }}
-              key={id}
-              onClick={() => {
-                if (canInteractWithUser) {
-                  setWantedPokemon(userOwnedPokemonMap[id]);
-                }
-              }}
-            >
-              <h2 className="text-center text-2xl">{name}</h2>
+          pokemons.map((p) => {
+            const { id, name, spriteUrl, types } = p;
+            return (
+              <div
+                className={`text-black rounded-lg flex flex-col p-1 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
+                style={{
+                  background:
+                    types.length === 2
+                      ? `linear-gradient(to bottom right, ${
+                          pokemonTypeColors[types[0].name]
+                        } 50%, ${pokemonTypeColors[types[1].name]} 50%)`
+                      : pokemonTypeColors[types[0].name],
+                }}
+                key={id}
+                onClick={() => {
+                  if (canInteractWithUser) {
+                    setWantedPokemon(pokemonMap[id]);
+                  }
+                }}
+              >
+                <h2 className="text-center text-2xl">{name}</h2>
 
-              <img
-                className={`${
-                  !userOwnsPokemon(id) && "brightness-0"
-                } [image-rendering:pixelated]`}
-                src={spriteUrl}
-              />
-            </div>
-          ))
+                <img
+                  className={`${
+                    !userOwnsPokemon(p) && "brightness-0"
+                  } [image-rendering:pixelated]`}
+                  src={spriteUrl}
+                />
+              </div>
+            );
+          })
         )}
       </div>
     </div>

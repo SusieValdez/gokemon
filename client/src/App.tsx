@@ -76,6 +76,28 @@ function App() {
     selectPokemon(index).then(() => window.location.reload());
   };
 
+  const loggedInUserOwnedPokemonMap = (
+    userSession?.loggedInUser?.ownedPokemon ?? []
+  ).reduce(
+    (acc, pokemon) => ({
+      ...acc,
+      [pokemon.id]: pokemon,
+    }),
+    {} as Record<number, Pokemon>
+  );
+  const loggedInUserOwnsPokemon = (p: Pokemon) =>
+    loggedInUserOwnedPokemonMap[p.id] !== undefined;
+
+  const userOwnedPokemonMap = (userSession?.user?.ownedPokemon ?? []).reduce(
+    (acc, pokemon) => ({
+      ...acc,
+      [pokemon.id]: pokemon,
+    }),
+    {} as Record<number, Pokemon>
+  );
+  const userOwnsPokemon = (p: Pokemon) =>
+    userOwnedPokemonMap[p.id] !== undefined;
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 text-white">
       {userSession ? (
@@ -96,6 +118,8 @@ function App() {
                       loggedInUser={userSession.loggedInUser}
                       sentFriendRequests={friendRequests.sent}
                       user={userSession.user}
+                      loggedInUserOwnsPokemon={loggedInUserOwnsPokemon}
+                      userOwnsPokemon={userOwnsPokemon}
                     />
                   ) : (
                     <HomePage />
@@ -114,6 +138,11 @@ function App() {
                     className="flex-1 outline outline-0 hover:outline-2 cursor-pointer rounded-md"
                     onClick={() => onClickPendingPokemon(i)}
                   >
+                    {!loggedInUserOwnsPokemon(p) && (
+                      <span className="top-5 left-5 relative text-red-500 font-bold">
+                        NEW!
+                      </span>
+                    )}
                     <img
                       className="w-full [image-rendering:pixelated] "
                       src={p.spriteUrl}
