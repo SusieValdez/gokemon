@@ -82,11 +82,11 @@ const Navbar = ({
   };
 
   return (
-    <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-800 fixed w-full">
+    <nav className="border-gray-200 px-2 sm:px-4 py-2.5 bg-gray-800 fixed w-full">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
         <Link to="/" className="flex items-center">
           <img src={Pokeball} className="mr-3 h-6 sm:h-9" alt="Logo" />
-          <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
+          <span className="self-center text-xl font-semibold whitespace-nowrap text-white">
             Gokemon
           </span>
         </Link>
@@ -122,7 +122,7 @@ const Navbar = ({
 
                 {openMenu === "friends" && (
                   <div
-                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none rounded divide-y shadow bg-gray-700 divide-gray-600"
                     style={{
                       position: "absolute",
                       inset: "0px auto auto 0px",
@@ -133,9 +133,7 @@ const Navbar = ({
                     }}
                   >
                     <div className="py-3 px-4">
-                      <span className="block text-sm text-gray-900 dark:text-white">
-                        Friends
-                      </span>
+                      <span className="block text-sm text-white">Friends</span>
                     </div>
                     {loggedInUser.friends.length > 0 ? (
                       <ul className="py-1" aria-labelledby="dropdown">
@@ -144,7 +142,7 @@ const Navbar = ({
                             <li key={id}>
                               <Link
                                 to={userPageUrl(username)}
-                                className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
                               >
                                 <img
                                   src={profilePictureUrl}
@@ -194,7 +192,7 @@ const Navbar = ({
 
                 {openMenu === "notifications" && (
                   <div
-                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none rounded divide-y shadow bg-gray-700 divide-gray-600"
                     style={{
                       position: "absolute",
                       inset: "0px auto auto 0px",
@@ -209,7 +207,7 @@ const Navbar = ({
                     }}
                   >
                     <div className="py-3 px-4">
-                      <span className="block text-sm text-gray-900 dark:text-white">
+                      <span className="block text-sm text-white">
                         Notifications
                       </span>
                     </div>
@@ -218,7 +216,7 @@ const Navbar = ({
                         {friendRequests.received.map(({ id, user }) => (
                           <li
                             key={id}
-                            className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                            className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
                           >
                             <img
                               src={user.profilePictureUrl}
@@ -281,7 +279,7 @@ const Navbar = ({
 
                 {openMenu === "trade-requests" && (
                   <div
-                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none rounded divide-y shadow bg-gray-700 divide-gray-600"
                     style={{
                       position: "absolute",
                       inset: "0px auto auto 0px",
@@ -298,21 +296,19 @@ const Navbar = ({
                     }}
                   >
                     <div className="py-3 px-4">
-                      <span className="block text-sm text-gray-900 dark:text-white">
+                      <span className="block text-sm text-white">
                         Trade Requests
                       </span>
                     </div>
                     <div className="py-3 px-4">
-                      <span className="block text-sm text-gray-900 dark:text-white">
-                        Sent
-                      </span>
+                      <span className="block text-sm text-white">Sent</span>
                       {tradeRequests.sent.length > 0 ? (
                         <ul className="py-1" aria-labelledby="dropdown">
                           {tradeRequests.sent.map(
                             ({ id, friend, userPokemon, friendPokemon }) => (
                               <li
                                 key={id}
-                                className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
                               >
                                 <p>
                                   <img
@@ -351,16 +347,14 @@ const Navbar = ({
                       )}
                     </div>
                     <div className="py-3 px-4">
-                      <span className="block text-sm text-gray-900 dark:text-white">
-                        Received
-                      </span>
+                      <span className="block text-sm text-white">Received</span>
                       {tradeRequests.received.length > 0 ? (
                         <ul className="py-1" aria-labelledby="dropdown">
                           {tradeRequests.received.map(
                             ({ id, user, userPokemon, friendPokemon }) => (
                               <li
                                 key={id}
-                                className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
                               >
                                 <p>
                                   <img
@@ -429,7 +423,7 @@ const Navbar = ({
 
                 {openMenu === "user" && (
                   <div
-                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none rounded divide-y shadow bg-gray-700 divide-gray-600"
                     style={{
                       position: "absolute",
                       inset: "0px auto auto 0px",
@@ -440,7 +434,7 @@ const Navbar = ({
                     }}
                   >
                     <div className="py-3 px-4">
-                      <span className="block text-sm text-gray-900 dark:text-white">
+                      <span className="block text-sm text-white">
                         {loggedInUser.username}
                       </span>
                     </div>
@@ -448,7 +442,7 @@ const Navbar = ({
                       <li>
                         <Link
                           to={userPageUrl(loggedInUser.username)}
-                          className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                          className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
                         >
                           Profile
                         </Link>
@@ -456,7 +450,7 @@ const Navbar = ({
                       <li>
                         <a
                           href={LOGOUT_URL}
-                          className="block py-2 px-4 text-sm text-red-700 hover:bg-gray-100 dark:hover:bg-red-600 dark:text-red-600 dark:hover:text-red-100"
+                          className="block py-2 px-4 text-sm hover:bg-red-600 text-red-600 hover:text-red-100"
                         >
                           Sign out
                         </a>
