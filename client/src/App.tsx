@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { getFriendRequests } from "./api/friendRequests";
-import { getPendingPokemons, selectPokemon } from "./api/pokemon";
+import { selectPokemon } from "./api/pokemon";
 import { getTradeRequests } from "./api/tradeRequests";
 import { getUser } from "./api/users";
 import Navbar from "./components/Navbar";
 import HomePage from "./components/pages/Home";
 import UserPage from "./components/pages/User";
-import { FriendRequest, Pokemon, TradeRequest, UserSession } from "./models";
+import {
+  FriendRequest,
+  OwnedPokemon,
+  Pokemon,
+  TradeRequest,
+  UserSession,
+} from "./models";
 
 function App() {
   const [userSession, setUserSession] = useState<UserSession>();
@@ -35,7 +41,7 @@ function App() {
     received: TradeRequest[];
   }>({ sent: [], received: [] });
 
-  const [pendingPokemon, setPendingPokemon] = useState<Pokemon[]>([]);
+  const [pendingPokemon, setPendingPokemon] = useState<OwnedPokemon[]>([]);
   const [secondsRemainingUntilNewPokemon, setSecondsRemainingUntilNewPokemon] =
     useState<number>();
 
@@ -59,11 +65,14 @@ function App() {
       userSession.loggedInUser.nextPokemonSelectionTimestamp;
     setSecondsRemainingUntilNewPokemon(getSecondsUntil(nextPokemonTimestamp));
     const interval = setInterval(() => {
+      if (!userSession?.loggedInUser) {
+        return;
+      }
       const secondsRemaining = getSecondsUntil(nextPokemonTimestamp);
       setSecondsRemainingUntilNewPokemon(secondsRemaining);
       if (secondsRemaining === 0 && pendingPokemon.length === 0) {
-        getPendingPokemons().then(({ pokemon }) =>
-          setPendingPokemon(pokemon ?? [])
+        getUser(userSession.loggedInUser.username).then(({ loggedInUser }) =>
+          setPendingPokemon(loggedInUser.pendingPokemon)
         );
       }
     }, 1000);
@@ -79,24 +88,27 @@ function App() {
   const loggedInUserOwnedPokemonMap = (
     userSession?.loggedInUser?.ownedPokemon ?? []
   ).reduce(
-    (acc, pokemon) => ({
+    (acc, p) => ({
       ...acc,
-      [pokemon.id]: pokemon,
+      [p.pokemon.id]: p,
     }),
-    {} as Record<number, Pokemon>
+    {} as Record<number, OwnedPokemon>
   );
   const loggedInUserOwnsPokemon = (p: Pokemon) =>
     loggedInUserOwnedPokemonMap[p.id] !== undefined;
+  const getLoggedInUserOwnedPokemon = (id: number) =>
+    loggedInUserOwnedPokemonMap[id];
 
   const userOwnedPokemonMap = (userSession?.user?.ownedPokemon ?? []).reduce(
-    (acc, pokemon) => ({
+    (acc, p) => ({
       ...acc,
-      [pokemon.id]: pokemon,
+      [p.pokemon.id]: p,
     }),
-    {} as Record<number, Pokemon>
+    {} as Record<number, OwnedPokemon>
   );
   const userOwnsPokemon = (p: Pokemon) =>
     userOwnedPokemonMap[p.id] !== undefined;
+  const getUserOwnedPokemon = (id: number) => userOwnedPokemonMap[id];
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 text-white">
@@ -119,7 +131,9 @@ function App() {
                       sentFriendRequests={friendRequests.sent}
                       user={userSession.user}
                       loggedInUserOwnsPokemon={loggedInUserOwnsPokemon}
+                      getLoggedInUserOwnedPokemon={getLoggedInUserOwnedPokemon}
                       userOwnsPokemon={userOwnsPokemon}
+                      getUserOwnedPokemon={getUserOwnedPokemon}
                     />
                   ) : (
                     <HomePage />
@@ -138,16 +152,16 @@ function App() {
                     className="flex-1 outline outline-0 hover:outline-2 cursor-pointer rounded-md"
                     onClick={() => onClickPendingPokemon(i)}
                   >
-                    {!loggedInUserOwnsPokemon(p) && (
+                    {!loggedInUserOwnsPokemon(p.pokemon) && (
                       <span className="top-5 left-5 relative text-red-500 font-bold">
                         NEW!
                       </span>
                     )}
                     <img
                       className={`w-full [image-rendering:pixelated] ${
-                        loggedInUserOwnsPokemon(p) && "grayscale"
+                        loggedInUserOwnsPokemon(p.pokemon) && "grayscale"
                       }`}
-                      src={p.spriteUrl}
+                      src={p.pokemon.spriteUrl}
                     />
                   </div>
                 ))}

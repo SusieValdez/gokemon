@@ -30,7 +30,7 @@ func (s *Server) DiscordLogin(c *gin.Context) {
 			Username:                      username,
 			ProfilePictureURL:             fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", discordUser.ID, discordUser.Avatar),
 			Friends:                       []*models.User{},
-			OwnedPokemon:                  []models.Pokemon{},
+			OwnedPokemon:                  []models.OwnedPokemon{},
 			NextPokemonSelectionTimestamp: time.Now().Add(time.Minute).UnixMilli(),
 		}
 		s.DB.Create(&newUser)

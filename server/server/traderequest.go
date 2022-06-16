@@ -19,14 +19,18 @@ func (s *Server) GetTradeRequests(c *gin.Context) {
 	s.DB.First(&user, "username = ?", username)
 	sentTradeRequests := []models.TradeRequest{}
 	s.DB.Preload("User").
+		Preload("UserPokemon.Pokemon").
 		Preload("UserPokemon").
 		Preload("Friend").
+		Preload("FriendPokemon.Pokemon").
 		Preload("FriendPokemon").
 		Find(&sentTradeRequests, "user_id = ?", user.ID)
 	receivedTradeRequests := []models.TradeRequest{}
 	s.DB.Preload("User").
+		Preload("UserPokemon.Pokemon").
 		Preload("UserPokemon").
 		Preload("Friend").
+		Preload("FriendPokemon.Pokemon").
 		Preload("FriendPokemon").
 		Find(&receivedTradeRequests, "friend_id = ?", user.ID)
 	c.JSON(http.StatusOK, gin.H{
@@ -90,13 +94,13 @@ func (s *Server) PostTradeRequest(c *gin.Context) {
 		return
 	}
 
-	var pokemon models.Pokemon
+	var pokemon models.OwnedPokemon
 	s.DB.First(&pokemon, tradeRequestRequest.PokemonID)
 
 	var friend models.User
 	s.DB.First(&friend, tradeRequestRequest.FriendID)
 
-	var friendPokemon models.Pokemon
+	var friendPokemon models.OwnedPokemon
 	s.DB.First(&friendPokemon, tradeRequestRequest.FriendPokemonID)
 
 	s.DB.Create(&models.TradeRequest{
