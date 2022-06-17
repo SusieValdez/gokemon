@@ -16,7 +16,21 @@ import {
 } from "./models";
 
 function App() {
-  const [userSession, setUserSession] = useState<UserSession>();
+  const [userSession, setUserSession_] = useState<UserSession>();
+  const setUserSession = (userSession: UserSession) => {
+    if (userSession.loggedInUser) {
+      userSession.loggedInUser.ownedPokemon =
+        userSession.loggedInUser.ownedPokemon.sort(
+          (a, b) => a.pokemon.id - b.pokemon.id
+        );
+    }
+    if (userSession.user) {
+      userSession.user.ownedPokemon = userSession.user.ownedPokemon.sort(
+        (a, b) => a.pokemon.id - b.pokemon.id
+      );
+    }
+    setUserSession_(userSession);
+  };
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,7 +55,6 @@ function App() {
     received: TradeRequest[];
   }>({ sent: [], received: [] });
 
-  const [pendingPokemon, setPendingPokemon] = useState<OwnedPokemon[]>([]);
   const [secondsRemainingUntilNewPokemon, setSecondsRemainingUntilNewPokemon] =
     useState<number>();
 
@@ -70,16 +83,19 @@ function App() {
       }
       const secondsRemaining = getSecondsUntil(nextPokemonTimestamp);
       setSecondsRemainingUntilNewPokemon(secondsRemaining);
-      if (secondsRemaining === 0 && pendingPokemon.length === 0) {
-        getUser(userSession.loggedInUser.username).then(({ loggedInUser }) =>
-          setPendingPokemon(loggedInUser.pendingPokemon)
+      if (
+        secondsRemaining === 0 &&
+        userSession.loggedInUser.pendingPokemon.length === 0
+      ) {
+        getUser(userSession.loggedInUser.username).then((userSession) =>
+          setUserSession(userSession)
         );
       }
     }, 1000);
     return () => {
       clearInterval(interval);
     };
-  }, [userSession, pendingPokemon]);
+  }, [userSession]);
 
   const onClickPendingPokemon = (index: number) => {
     selectPokemon(index).then(() => window.location.reload());
@@ -142,32 +158,33 @@ function App() {
               />
             </Routes>
           </div>
-          {pendingPokemon.length > 0 && (
-            <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4">
-              <h2 className="text-3xl">Select your new Pokemon!</h2>
-              <div className="flex gap-2">
-                {pendingPokemon.map((p, i) => (
-                  <div
-                    key={p.id}
-                    className="flex-1 outline outline-0 hover:outline-2 cursor-pointer rounded-md"
-                    onClick={() => onClickPendingPokemon(i)}
-                  >
-                    {!loggedInUserOwnsPokemon(p.pokemon) && (
-                      <span className="top-5 left-5 relative text-red-500 font-bold">
-                        NEW!
-                      </span>
-                    )}
-                    <img
-                      className={`w-full [image-rendering:pixelated] ${
-                        loggedInUserOwnsPokemon(p.pokemon) && "grayscale"
-                      }`}
-                      src={p.pokemon.spriteUrl}
-                    />
-                  </div>
-                ))}
+          {userSession.loggedInUser &&
+            userSession.loggedInUser.pendingPokemon.length > 0 && (
+              <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4">
+                <h2 className="text-3xl">Select your new Pokemon!</h2>
+                <div className="flex gap-2">
+                  {userSession.loggedInUser.pendingPokemon.map((p, i) => (
+                    <div
+                      key={p.id}
+                      className="flex-1 outline outline-0 hover:outline-2 cursor-pointer rounded-md"
+                      onClick={() => onClickPendingPokemon(i)}
+                    >
+                      {!loggedInUserOwnsPokemon(p.pokemon) && (
+                        <span className="top-5 left-5 relative text-red-500 font-bold">
+                          NEW!
+                        </span>
+                      )}
+                      <img
+                        className={`w-full [image-rendering:pixelated] ${
+                          loggedInUserOwnsPokemon(p.pokemon) && "grayscale"
+                        }`}
+                        src={p.pokemon.spriteUrl}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       ) : (
         <div>loading...</div>
