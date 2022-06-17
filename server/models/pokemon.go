@@ -18,10 +18,3 @@ type Pokemon struct {
 type Type struct {
 	Name string `json:"name" gorm:"primary_key"`
 }
-
-type PendingPokemon struct {
-	ID      uint      `json:"id" gorm:"primary_key"`
-	UserID  uint      `json:"user_id"`
-	User    User      `json:"user"`
-	Pokemon []Pokemon `json:"pokemon" gorm:"many2many:pending_pokemon"`
-}

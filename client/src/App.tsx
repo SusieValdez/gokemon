@@ -1,16 +1,36 @@
 import { useState, useEffect } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { getFriendRequests } from "./api/friendRequests";
-import { getPendingPokemons, selectPokemon } from "./api/pokemon";
+import { selectPokemon } from "./api/pokemon";
 import { getTradeRequests } from "./api/tradeRequests";
 import { getUser } from "./api/users";
 import Navbar from "./components/Navbar";
 import HomePage from "./components/pages/Home";
 import UserPage from "./components/pages/User";
-import { FriendRequest, Pokemon, TradeRequest, UserSession } from "./models";
+import {
+  FriendRequest,
+  OwnedPokemon,
+  Pokemon,
+  TradeRequest,
+  UserSession,
+} from "./models";
 
 function App() {
-  const [userSession, setUserSession] = useState<UserSession>();
+  const [userSession, setUserSession_] = useState<UserSession>();
+  const setUserSession = (userSession: UserSession) => {
+    if (userSession.loggedInUser) {
+      userSession.loggedInUser.ownedPokemon =
+        userSession.loggedInUser.ownedPokemon.sort(
+          (a, b) => a.pokemon.id - b.pokemon.id
+        );
+    }
+    if (userSession.user) {
+      userSession.user.ownedPokemon = userSession.user.ownedPokemon.sort(
+        (a, b) => a.pokemon.id - b.pokemon.id
+      );
+    }
+    setUserSession_(userSession);
+  };
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,7 +55,6 @@ function App() {
     received: TradeRequest[];
   }>({ sent: [], received: [] });
 
-  const [pendingPokemon, setPendingPokemon] = useState<Pokemon[]>([]);
   const [secondsRemainingUntilNewPokemon, setSecondsRemainingUntilNewPokemon] =
     useState<number>();
 
@@ -59,18 +78,24 @@ function App() {
       userSession.loggedInUser.nextPokemonSelectionTimestamp;
     setSecondsRemainingUntilNewPokemon(getSecondsUntil(nextPokemonTimestamp));
     const interval = setInterval(() => {
+      if (!userSession?.loggedInUser) {
+        return;
+      }
       const secondsRemaining = getSecondsUntil(nextPokemonTimestamp);
       setSecondsRemainingUntilNewPokemon(secondsRemaining);
-      if (secondsRemaining === 0 && pendingPokemon.length === 0) {
-        getPendingPokemons().then(({ pokemon }) =>
-          setPendingPokemon(pokemon ?? [])
+      if (
+        secondsRemaining === 0 &&
+        userSession.loggedInUser.pendingPokemon.length === 0
+      ) {
+        getUser(userSession.loggedInUser.username).then((userSession) =>
+          setUserSession(userSession)
         );
       }
     }, 1000);
     return () => {
       clearInterval(interval);
     };
-  }, [userSession, pendingPokemon]);
+  }, [userSession]);
 
   const onClickPendingPokemon = (index: number) => {
     selectPokemon(index).then(() => window.location.reload());
@@ -79,24 +104,27 @@ function App() {
   const loggedInUserOwnedPokemonMap = (
     userSession?.loggedInUser?.ownedPokemon ?? []
   ).reduce(
-    (acc, pokemon) => ({
+    (acc, p) => ({
       ...acc,
-      [pokemon.id]: pokemon,
+      [p.pokemon.id]: p,
     }),
-    {} as Record<number, Pokemon>
+    {} as Record<number, OwnedPokemon>
   );
   const loggedInUserOwnsPokemon = (p: Pokemon) =>
     loggedInUserOwnedPokemonMap[p.id] !== undefined;
+  const getLoggedInUserOwnedPokemon = (id: number) =>
+    loggedInUserOwnedPokemonMap[id];
 
   const userOwnedPokemonMap = (userSession?.user?.ownedPokemon ?? []).reduce(
-    (acc, pokemon) => ({
+    (acc, p) => ({
       ...acc,
-      [pokemon.id]: pokemon,
+      [p.pokemon.id]: p,
     }),
-    {} as Record<number, Pokemon>
+    {} as Record<number, OwnedPokemon>
   );
   const userOwnsPokemon = (p: Pokemon) =>
     userOwnedPokemonMap[p.id] !== undefined;
+  const getUserOwnedPokemon = (id: number) => userOwnedPokemonMap[id];
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 text-white">
@@ -119,7 +147,9 @@ function App() {
                       sentFriendRequests={friendRequests.sent}
                       user={userSession.user}
                       loggedInUserOwnsPokemon={loggedInUserOwnsPokemon}
+                      getLoggedInUserOwnedPokemon={getLoggedInUserOwnedPokemon}
                       userOwnsPokemon={userOwnsPokemon}
+                      getUserOwnedPokemon={getUserOwnedPokemon}
                     />
                   ) : (
                     <HomePage />
@@ -128,32 +158,33 @@ function App() {
               />
             </Routes>
           </div>
-          {pendingPokemon.length > 0 && (
-            <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4">
-              <h2 className="text-3xl">Select your new Pokemon!</h2>
-              <div className="flex gap-2">
-                {pendingPokemon.map((p, i) => (
-                  <div
-                    key={p.id}
-                    className="flex-1 outline outline-0 hover:outline-2 cursor-pointer rounded-md"
-                    onClick={() => onClickPendingPokemon(i)}
-                  >
-                    {!loggedInUserOwnsPokemon(p) && (
-                      <span className="top-5 left-5 relative text-red-500 font-bold">
-                        NEW!
-                      </span>
-                    )}
-                    <img
-                      className={`w-full [image-rendering:pixelated] ${
-                        loggedInUserOwnsPokemon(p) && "grayscale"
-                      }`}
-                      src={p.spriteUrl}
-                    />
-                  </div>
-                ))}
+          {userSession.loggedInUser &&
+            userSession.loggedInUser.pendingPokemon.length > 0 && (
+              <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4">
+                <h2 className="text-3xl">Select your new Pokemon!</h2>
+                <div className="flex gap-2">
+                  {userSession.loggedInUser.pendingPokemon.map((p, i) => (
+                    <div
+                      key={p.id}
+                      className="flex-1 outline outline-0 hover:outline-2 cursor-pointer rounded-md"
+                      onClick={() => onClickPendingPokemon(i)}
+                    >
+                      {!loggedInUserOwnsPokemon(p.pokemon) && (
+                        <span className="top-5 left-5 relative text-red-500 font-bold">
+                          NEW!
+                        </span>
+                      )}
+                      <img
+                        className={`w-full [image-rendering:pixelated] ${
+                          loggedInUserOwnsPokemon(p.pokemon) && "grayscale"
+                        }`}
+                        src={p.pokemon.spriteUrl}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       ) : (
         <div>loading...</div>

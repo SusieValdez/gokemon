@@ -321,9 +321,11 @@ const Navbar = ({
                                 <div className="flex items-center">
                                   <div className="flex items-center">
                                     Their
-                                    <img src={friendPokemon.spriteUrl} />
+                                    <img
+                                      src={friendPokemon.pokemon.spriteUrl}
+                                    />
                                     for your
-                                    <img src={userPokemon.spriteUrl} />
+                                    <img src={userPokemon.pokemon.spriteUrl} />
                                   </div>
                                   <div>
                                     <button
@@ -367,9 +369,11 @@ const Navbar = ({
                                 <div className="flex items-center">
                                   <div className="flex items-center">
                                     Their
-                                    <img src={userPokemon.spriteUrl} />
+                                    <img src={userPokemon.pokemon.spriteUrl} />
                                     for your
-                                    <img src={friendPokemon.spriteUrl} />
+                                    <img
+                                      src={friendPokemon.pokemon.spriteUrl}
+                                    />
                                   </div>
                                   <div>
                                     <button

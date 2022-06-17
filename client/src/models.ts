@@ -9,11 +9,17 @@ export type PokemonType = {
   name: string;
 };
 
+export type OwnedPokemon = {
+  id: number;
+  pokemon: Pokemon;
+};
+
 export type User = {
   id: number;
   username: string;
   profilePictureUrl: string;
-  ownedPokemon: Pokemon[];
+  ownedPokemon: OwnedPokemon[];
+  pendingPokemon: OwnedPokemon[];
   friends: User[];
   nextPokemonSelectionTimestamp: number; // millis since epoch
 };
@@ -32,7 +38,7 @@ export type FriendRequest = {
 export type TradeRequest = {
   id: number;
   user: User;
-  userPokemon: Pokemon;
+  userPokemon: OwnedPokemon;
   friend: User;
-  friendPokemon: Pokemon;
+  friendPokemon: OwnedPokemon;
 };

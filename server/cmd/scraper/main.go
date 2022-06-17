@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"susie.mx/gokemon/models"
@@ -13,11 +15,20 @@ import (
 const MAX_POKEMON_ID = 898
 
 func main() {
-	dsn := "host=localhost user=postgres password=postgres dbname=gokemon"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("loading .env file failed")
+	}
+
+	pgUsername := os.Getenv("POSTGRES_USERNAME")
+	pgPassword := os.Getenv("POSTGRES_PASSWORD")
+
+	dsn := fmt.Sprintf("host=localhost user=%s password=%s dbname=gokemon", pgUsername, pgPassword)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect database: %s", err)
 	}
+
 	db.Migrator().DropTable(&models.Pokemon{})
 	db.Migrator().DropTable(&models.Type{})
 	db.AutoMigrate(&models.Pokemon{})

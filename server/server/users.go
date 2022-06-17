@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm/clause"
 	"susie.mx/gokemon/models"
 )
 
@@ -20,7 +21,11 @@ func (s *Server) GetUser(c *gin.Context) {
 
 	var loggedInUser models.User
 	if loggedInUsername != "" {
-		s.DB.Preload("OwnedPokemon").Preload("Friends").First(&loggedInUser, "username = ?", loggedInUsername)
+		s.DB.
+			Preload("OwnedPokemon.Pokemon").
+			Preload("PendingPokemon.Pokemon").
+			Preload(clause.Associations).
+			First(&loggedInUser, "username = ?", loggedInUsername)
 	}
 	if loggedInUser.ID != 0 {
 		obj["loggedInUser"] = loggedInUser
@@ -28,7 +33,11 @@ func (s *Server) GetUser(c *gin.Context) {
 
 	var user models.User
 	if username != "" {
-		s.DB.Preload("OwnedPokemon").Preload("Friends").First(&user, "username = ?", username)
+		s.DB.
+			Preload("OwnedPokemon.Pokemon").
+			Preload("PendingPokemon.Pokemon").
+			Preload(clause.Associations).
+			First(&user, "username = ?", username)
 	}
 	if user.ID != 0 {
 		obj["user"] = user

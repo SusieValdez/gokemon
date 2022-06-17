@@ -54,13 +54,13 @@ func main() {
 		RedirectURI:  discordRedirectUri,
 	}
 
+	if err := db.AutoMigrate(&models.OwnedPokemon{}); err != nil {
+		log.Fatalln(err)
+	}
 	if err := db.AutoMigrate(&models.User{}); err != nil {
 		log.Fatalln(err)
 	}
 	if err := db.AutoMigrate(&models.Pokemon{}); err != nil {
-		log.Fatalln(err)
-	}
-	if err := db.AutoMigrate(&models.PendingPokemon{}); err != nil {
 		log.Fatalln(err)
 	}
 	if err := db.AutoMigrate(&models.FriendRequest{}); err != nil {
@@ -94,7 +94,6 @@ func main() {
 		AllowCredentials: true,
 	}))
 	r.GET("/api/v1/pokemon", s.GetPokemons)
-	r.GET("/api/v1/pendingPokemon", s.GetPendingPokemons)
 	r.POST("/api/v1/pendingPokemon/select", s.SelectPokemon)
 
 	r.GET("/api/v1/auth/discord/redirect", s.DiscordLogin)
