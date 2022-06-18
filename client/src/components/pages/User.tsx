@@ -11,6 +11,13 @@ import { useLocalStorageState } from "../../hooks/useLocalStorageState";
 import { useOnClickOutsideElement } from "../../hooks/useOnClickOutsideElement";
 import { FriendRequest, OwnedPokemon, Pokemon, User } from "../../models";
 
+const toName = (name: string): string => {
+  const parts = name.split("-");
+  return parts
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+};
+
 const pokemonTypeColors: Record<string, string> = {
   normal: "#A8A77A",
   fire: "#EE8130",
@@ -408,7 +415,7 @@ function UserPage({
             const { id, name, spriteUrl, types } = p;
             return (
               <div
-                className={`text-black rounded-lg flex flex-col p-1 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
+                className={`text-black rounded-lg flex flex-col py-2 px-4 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
                 style={{
                   background:
                     types.length === 2
@@ -424,14 +431,16 @@ function UserPage({
                   }
                 }}
               >
-                <h2 className="text-center text-2xl">{name}</h2>
-
+                <h2 className="text-center text-xl font-bold">
+                  {toName(name)}
+                </h2>
                 <img
                   className={`${
                     !userOwnsPokemon(p) && "brightness-0"
                   } [image-rendering:pixelated]`}
                   src={spriteUrl}
                 />
+                <span className="text-center text-sm font-bold">{id}</span>
               </div>
             );
           })
