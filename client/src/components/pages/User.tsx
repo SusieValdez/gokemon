@@ -434,12 +434,14 @@ function UserPage({
                 <h2 className="text-center text-xl font-bold">
                   {toName(name)}
                 </h2>
-                <img
-                  className={`${
-                    !userOwnsPokemon(p) && "brightness-0"
-                  } [image-rendering:pixelated]`}
-                  src={spriteUrl}
-                />
+                <div>
+                  <img
+                    className={`${
+                      !userOwnsPokemon(p) && "brightness-0"
+                    } [image-rendering:pixelated] w-full`}
+                    src={spriteUrl}
+                  />
+                </div>
                 <span className="text-center text-sm font-bold">{id}</span>
               </div>
             );
