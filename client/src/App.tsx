@@ -7,6 +7,7 @@ import { getUser } from "./api/users";
 import Navbar from "./components/Navbar";
 import HomePage from "./components/pages/Home";
 import UserPage from "./components/pages/User";
+import PokemonCard from "./components/PokemonCard";
 import {
   FriendRequest,
   OwnedPokemon,
@@ -161,25 +162,23 @@ function App() {
           {userSession.loggedInUser &&
             userSession.loggedInUser.pendingPokemon.length > 0 && (
               <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4">
-                <h2 className="text-3xl">Select your new Pokemon!</h2>
-                <div className="flex gap-2">
+                <h2 className="text-3xl mb-4">Select a Pokemon!</h2>
+                <div className="gap-2 grid grid-cols-3">
                   {userSession.loggedInUser.pendingPokemon.map((p, i) => (
-                    <div
-                      key={p.id}
-                      className="flex-1 outline outline-0 hover:outline-2 cursor-pointer rounded-md"
-                      onClick={() => onClickPendingPokemon(i)}
-                    >
-                      {!loggedInUserOwnsPokemon(p.pokemon) && (
-                        <span className="top-5 left-5 relative text-red-500 font-bold">
-                          NEW!
-                        </span>
-                      )}
-                      <img
-                        className={`w-full [image-rendering:pixelated] ${
+                    <div key={p.id} className="relative w-full">
+                      <PokemonCard
+                        pokemon={p.pokemon}
+                        onClick={() => onClickPendingPokemon(i)}
+                        imgClassName={`${
                           loggedInUserOwnsPokemon(p.pokemon) && "grayscale"
                         }`}
-                        src={p.pokemon.spriteUrl}
-                      />
+                      >
+                        {!loggedInUserOwnsPokemon(p.pokemon) && (
+                          <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
+                            NEW!
+                          </span>
+                        )}
+                      </PokemonCard>
                     </div>
                   ))}
                 </div>
