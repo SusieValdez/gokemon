@@ -161,7 +161,7 @@ function App() {
                   {userSession.loggedInUser.pendingPokemon.map((p, i) => (
                     <div key={p.id} className="relative w-full">
                       <PokemonCard
-                        pokemon={p.pokemon}
+                        pokemon={p}
                         onClick={() => onClickPendingPokemon(i)}
                         imgClassName={`${
                           loggedInUserOwnsPokemon(p.pokemon) && "grayscale"

@@ -4,7 +4,7 @@ import {
   deleteFriendRequest,
   postFriendRequest,
 } from "../../api/friendRequests";
-import { getPokemons } from "../../api/pokemon";
+import { getPokemons, spriteUrl } from "../../api/pokemon";
 import { postTradeRequest } from "../../api/tradeRequests";
 import { deleteFriendship } from "../../api/users";
 import { useLocalStorageState } from "../../hooks/useLocalStorageState";
@@ -299,7 +299,7 @@ function UserPage({
                       value: p.pokemon.id,
                       label: (
                         <div className="flex items-center">
-                          <img src={p.pokemon.spriteUrl} />
+                          <img src={spriteUrl(p)} />
                           {p.pokemon.name}
                         </div>
                       ),
@@ -308,7 +308,7 @@ function UserPage({
                     value: offeredPokemon.id,
                     label: (
                       <div className="flex items-center">
-                        <img src={offeredPokemon.pokemon.spriteUrl} />
+                        <img src={spriteUrl(offeredPokemon)} />
                         {offeredPokemon.pokemon.name}
                       </div>
                     ),
@@ -319,7 +319,7 @@ function UserPage({
                   }}
                 />
                 <img
-                  src={offeredPokemon.pokemon.spriteUrl}
+                  src={spriteUrl(offeredPokemon)}
                   className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
                   alt="user pokemon"
                 />
@@ -341,7 +341,7 @@ function UserPage({
                     value: wantedPokemon.id,
                     label: (
                       <div className="flex items-center">
-                        <img src={wantedPokemon.pokemon.spriteUrl} />
+                        <img src={spriteUrl(wantedPokemon)} />
                         {wantedPokemon.pokemon.name}
                       </div>
                     ),
@@ -352,7 +352,7 @@ function UserPage({
                       value: p.pokemon.id,
                       label: (
                         <div className="flex items-center">
-                          <img src={p.pokemon.spriteUrl} />
+                          <img src={spriteUrl(p)} />
                           {p.pokemon.name}
                         </div>
                       ),
@@ -362,7 +362,7 @@ function UserPage({
                   }}
                 />
                 <img
-                  src={wantedPokemon.pokemon.spriteUrl}
+                  src={spriteUrl(wantedPokemon)}
                   className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
                   alt="user pokemon"
                 />
@@ -387,7 +387,7 @@ function UserPage({
           pokemons.map((p) => (
             <PokemonCard
               key={p.id}
-              pokemon={p}
+              pokemon={getUserOwnedPokemon(p.id) ?? { id: 0, pokemon: p }}
               onClick={() => {
                 if (canInteractWithUser) {
                   setWantedPokemon(getUserOwnedPokemon(p.id));

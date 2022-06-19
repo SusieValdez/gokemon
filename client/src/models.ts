@@ -8,7 +8,6 @@ export type PokemonType = z.infer<typeof PokemonType>;
 export const Pokemon = z.object({
   id: z.number(),
   name: z.string(),
-  spriteUrl: z.string(),
   types: z.array(PokemonType),
 });
 export type Pokemon = z.infer<typeof Pokemon>;

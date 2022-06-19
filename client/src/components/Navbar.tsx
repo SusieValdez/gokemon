@@ -11,6 +11,7 @@ import { deleteFriendRequest, FriendRequests } from "../api/friendRequests";
 import { acceptTrade, postFriendship } from "../api/users";
 import { deleteTradeRequest } from "../api/tradeRequests";
 import { Link, useLocation } from "react-router-dom";
+import { spriteUrl } from "../api/pokemon";
 
 function convertSeconds(s: number): string {
   var min = Math.floor(s / 60);
@@ -318,11 +319,9 @@ const Navbar = ({
                                 <div className="flex items-center">
                                   <div className="flex items-center">
                                     Their
-                                    <img
-                                      src={friendPokemon.pokemon.spriteUrl}
-                                    />
+                                    <img src={spriteUrl(friendPokemon)} />
                                     for your
-                                    <img src={userPokemon.pokemon.spriteUrl} />
+                                    <img src={spriteUrl(userPokemon)} />
                                   </div>
                                   <div>
                                     <button
@@ -366,11 +365,9 @@ const Navbar = ({
                                 <div className="flex items-center">
                                   <div className="flex items-center">
                                     Their
-                                    <img src={userPokemon.pokemon.spriteUrl} />
+                                    <img src={spriteUrl(userPokemon)} />
                                     for your
-                                    <img
-                                      src={friendPokemon.pokemon.spriteUrl}
-                                    />
+                                    <img src={spriteUrl(friendPokemon)} />
                                   </div>
                                   <div>
                                     <button

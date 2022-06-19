@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { SERVER_BASE_URL } from "../config";
-import { Pokemon } from "../models";
+import { OwnedPokemon, Pokemon } from "../models";
+
+export const spriteUrl = (ownedPokemon: OwnedPokemon) => {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${ownedPokemon.pokemon.id}.png`;
+};
 
 export const getPokemons = async (): Promise<Pokemon[]> =>
   fetch(`${SERVER_BASE_URL}/api/v1/pokemon`)

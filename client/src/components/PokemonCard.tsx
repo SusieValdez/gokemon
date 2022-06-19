@@ -1,4 +1,5 @@
-import { Pokemon } from "../models";
+import { spriteUrl } from "../api/pokemon";
+import { OwnedPokemon } from "../models";
 
 const toName = (name: string): string => {
   const parts = name.split("-");
@@ -29,7 +30,7 @@ const pokemonTypeColors: Record<string, string> = {
 };
 
 type PokemonCardProps = {
-  pokemon: Pokemon;
+  pokemon: OwnedPokemon;
   onClick?: () => void;
   imgClassName?: string;
 };
@@ -40,7 +41,9 @@ const PokemonCard: React.FC<PokemonCardProps> = ({
   imgClassName,
   children,
 }) => {
-  const { id, name, spriteUrl, types } = pokemon;
+  const {
+    pokemon: { id, name, types },
+  } = pokemon;
   return (
     <div
       className={`w-full text-black rounded-lg flex flex-col py-2 px-4 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
@@ -61,7 +64,7 @@ const PokemonCard: React.FC<PokemonCardProps> = ({
       <div>
         <img
           className={`[image-rendering:pixelated] w-full ${imgClassName ?? ""}`}
-          src={spriteUrl}
+          src={spriteUrl(pokemon)}
         />
       </div>
       {children}
