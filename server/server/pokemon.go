@@ -71,5 +71,5 @@ func (s *Server) SelectPokemon(c *gin.Context) {
 	user.NextPokemonSelectionTimestamp = time.Now().Add(NewPokemonInterval).UnixMilli()
 	s.DB.Save(&user)
 	go s.NewPokemonTimer(user.ID)
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusOK, "ok")
 }

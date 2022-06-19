@@ -1,44 +1,49 @@
-export type Pokemon = {
-  id: number;
-  name: string;
-  spriteUrl: string;
-  types: PokemonType[];
-};
+import { z } from "zod";
 
-export type PokemonType = {
-  name: string;
-};
+export const PokemonType = z.object({
+  name: z.string(),
+});
+export type PokemonType = z.infer<typeof PokemonType>;
 
-export type OwnedPokemon = {
-  id: number;
-  pokemon: Pokemon;
-};
+export const Pokemon = z.object({
+  id: z.number(),
+  name: z.string(),
+  spriteUrl: z.string(),
+  types: z.array(PokemonType),
+});
+export type Pokemon = z.infer<typeof Pokemon>;
 
-export type User = {
-  id: number;
-  username: string;
-  profilePictureUrl: string;
-  ownedPokemon: OwnedPokemon[];
-  pendingPokemon: OwnedPokemon[];
-  friends: User[];
-  nextPokemonSelectionTimestamp: number; // millis since epoch
-};
+export const OwnedPokemon = z.object({
+  id: z.number(),
+  pokemon: Pokemon,
+});
+export type OwnedPokemon = z.infer<typeof OwnedPokemon>;
 
-export type UserSession = {
-  loggedInUser?: User;
-  user?: User;
-};
+export const PartialUser = z.object({
+  id: z.number(),
+  username: z.string(),
+  profilePictureUrl: z.string(),
+  nextPokemonSelectionTimestamp: z.number(), // millis since epoch
+});
+export const User = PartialUser.extend({
+  ownedPokemon: z.array(OwnedPokemon),
+  pendingPokemon: z.array(OwnedPokemon),
+  friends: z.array(PartialUser),
+});
+export type User = z.infer<typeof User>;
 
-export type FriendRequest = {
-  id: number;
-  user: User;
-  friend: User;
-};
+export const FriendRequest = z.object({
+  id: z.number(),
+  user: PartialUser,
+  friend: PartialUser,
+});
+export type FriendRequest = z.infer<typeof FriendRequest>;
 
-export type TradeRequest = {
-  id: number;
-  user: User;
-  userPokemon: OwnedPokemon;
-  friend: User;
-  friendPokemon: OwnedPokemon;
-};
+export const TradeRequest = z.object({
+  id: z.number(),
+  user: PartialUser,
+  userPokemon: OwnedPokemon,
+  friend: PartialUser,
+  friendPokemon: OwnedPokemon,
+});
+export type TradeRequest = z.infer<typeof TradeRequest>;
