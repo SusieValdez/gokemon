@@ -13,7 +13,7 @@ import { FriendRequest, OwnedPokemon, Pokemon, User } from "../../models";
 import PokemonCard from "../PokemonCard";
 
 type UserProps = {
-  loggedInUser?: User;
+  loggedInUser: User | null;
   sentFriendRequests: FriendRequest[];
   user: User;
   loggedInUserOwnsPokemon: (p: Pokemon) => boolean;
@@ -25,7 +25,7 @@ type UserProps = {
 type PokemonFilter = "all" | "owned" | "unowned";
 
 const filteredPokemon = (
-  loggedInUser: User | undefined,
+  loggedInUser: User | null,
   user: User,
   allPokemon: Pokemon[],
   loggedInUserPokemonFilter: PokemonFilter,

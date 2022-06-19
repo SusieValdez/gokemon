@@ -19,7 +19,7 @@ function convertSeconds(s: number): string {
 }
 
 type NavbarProps = {
-  loggedInUser?: User;
+  loggedInUser: User | null;
   friendRequests: FriendRequests;
   tradeRequests: {
     sent: TradeRequest[];

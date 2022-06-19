@@ -3,8 +3,8 @@ import { SERVER_BASE_URL } from "../config";
 import { User } from "../models";
 
 export const UserSession = z.object({
-  loggedInUser: z.optional(User),
-  user: z.optional(User),
+  loggedInUser: z.nullable(User),
+  user: z.nullable(User),
 });
 export type UserSession = z.infer<typeof UserSession>;
 
