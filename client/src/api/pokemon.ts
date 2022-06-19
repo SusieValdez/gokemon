@@ -1,13 +1,19 @@
+import { z } from "zod";
 import { SERVER_BASE_URL } from "../config";
+import { Pokemon } from "../models";
 
-export const getPokemons = () =>
-  fetch(`${SERVER_BASE_URL}/api/v1/pokemon`).then((res) => res.json());
+export const getPokemons = async (): Promise<Pokemon[]> =>
+  fetch(`${SERVER_BASE_URL}/api/v1/pokemon`)
+    .then((res) => res.json())
+    .then((json) => z.array(Pokemon).parse(json));
 
-export const selectPokemon = (index: number) =>
+export const selectPokemon = async (index: number): Promise<string> =>
   fetch(`${SERVER_BASE_URL}/api/v1/pendingPokemon/select`, {
     method: "POST",
     credentials: "include",
     body: JSON.stringify({
       pendingPokemonIndex: index,
     }),
-  }).then((res) => res.json());
+  })
+    .then((res) => res.json())
+    .then((json) => z.string().parse(json));

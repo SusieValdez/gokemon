@@ -3,11 +3,11 @@ import Pokeball from "../assets/pokeball.png";
 import NotificationIcon from "../assets/bell-solid.svg";
 import FriendListIcon from "../assets/user-group-solid.svg";
 import TradeRequestIcon from "../assets/retweet-solid.svg";
-import { FriendRequest, TradeRequest, User } from "../models";
+import { TradeRequest, User } from "../models";
 import { useEffect, useRef, useState } from "react";
 import { useElementClientRect } from "../hooks/useElementClientRect";
 import { useOnClickOutsideElements } from "../hooks/useOnClickOutsideElement";
-import { deleteFriendRequest } from "../api/friendRequests";
+import { deleteFriendRequest, FriendRequests } from "../api/friendRequests";
 import { acceptTrade, postFriendship } from "../api/users";
 import { deleteTradeRequest } from "../api/tradeRequests";
 import { Link, useLocation } from "react-router-dom";
@@ -20,10 +20,7 @@ function convertSeconds(s: number): string {
 
 type NavbarProps = {
   loggedInUser?: User;
-  friendRequests: {
-    sent: FriendRequest[];
-    received: FriendRequest[];
-  };
+  friendRequests: FriendRequests;
   tradeRequests: {
     sent: TradeRequest[];
     received: TradeRequest[];

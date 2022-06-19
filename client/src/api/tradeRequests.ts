@@ -1,9 +1,19 @@
+import { z } from "zod";
 import { SERVER_BASE_URL } from "../config";
+import { TradeRequest } from "../models";
+
+export const TradeRequests = z.object({
+  sent: z.array(TradeRequest),
+  received: z.array(TradeRequest),
+});
+export type TradeRequests = z.infer<typeof TradeRequests>;
 
 export const getTradeRequests = () =>
   fetch(`${SERVER_BASE_URL}/api/v1/tradeRequests`, {
     credentials: "include",
-  }).then((res) => res.json());
+  })
+    .then((res) => res.json())
+    .then((json) => TradeRequests.parse(json));
 
 export const postTradeRequest = (
   pokemonId: number,
