@@ -12,6 +12,7 @@ import (
 
 const NewPokemonInterval = 25 * time.Minute
 const NumPendingPokemon = 3
+const ShinyRate = 1.0 / 100.0
 
 func (s *Server) GetPokemons(c *gin.Context) {
 	var pokemon []models.Pokemon
@@ -42,6 +43,7 @@ func (s *Server) NewPokemonTimer(userID uint) {
 		ownedPokemon := models.OwnedPokemon{
 			PendingOwnerID: &user.ID,
 			Pokemon:        p,
+			IsShiny:        rand.Float64() <= ShinyRate,
 		}
 		s.DB.Create(&ownedPokemon)
 		ownedPokemons = append(ownedPokemons, ownedPokemon)

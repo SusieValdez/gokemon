@@ -15,6 +15,7 @@ export type Pokemon = z.infer<typeof Pokemon>;
 export const OwnedPokemon = z.object({
   id: z.number(),
   pokemon: Pokemon,
+  isShiny: z.boolean(),
 });
 export type OwnedPokemon = z.infer<typeof OwnedPokemon>;
 

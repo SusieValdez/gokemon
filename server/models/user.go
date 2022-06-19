@@ -18,6 +18,7 @@ type OwnedPokemon struct {
 	Pokemon        Pokemon `json:"pokemon"`
 	OwnerID        *uint   `json:"ownerId"`
 	PendingOwnerID *uint   `json:"pendingOwnerId"`
+	IsShiny        bool    `json:"isShiny"`
 }
 
 type FriendRequest struct {

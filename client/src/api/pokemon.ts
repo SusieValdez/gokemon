@@ -2,8 +2,10 @@ import { z } from "zod";
 import { SERVER_BASE_URL } from "../config";
 import { OwnedPokemon, Pokemon } from "../models";
 
-export const spriteUrl = (ownedPokemon: OwnedPokemon) => {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${ownedPokemon.pokemon.id}.png`;
+export const spriteUrl = ({ pokemon: { id: pid }, isShiny }: OwnedPokemon) => {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon${
+    isShiny ? "/shiny" : ""
+  }/${pid}.png`;
 };
 
 export const getPokemons = async (): Promise<Pokemon[]> =>
