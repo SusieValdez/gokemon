@@ -22,6 +22,8 @@ func (s *Server) GetUser(c *gin.Context) {
 	var loggedInUser models.User
 	if loggedInUsername != "" {
 		s.DB.
+			Preload("OwnedPokemon.Pokemon.Types").
+			Preload("PendingPokemon.Pokemon.Types").
 			Preload("OwnedPokemon.Pokemon").
 			Preload("PendingPokemon.Pokemon").
 			Preload(clause.Associations).
@@ -34,6 +36,8 @@ func (s *Server) GetUser(c *gin.Context) {
 	var user models.User
 	if username != "" {
 		s.DB.
+			Preload("OwnedPokemon.Pokemon.Types").
+			Preload("PendingPokemon.Pokemon.Types").
 			Preload("OwnedPokemon.Pokemon").
 			Preload("PendingPokemon.Pokemon").
 			Preload(clause.Associations).
