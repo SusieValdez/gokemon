@@ -164,7 +164,7 @@ const Navbar = ({
               </span>
               <span ref={notificationsMenu} className="">
                 {friendRequests.received.length > 0 && (
-                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
+                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-red-500"></div>
                 )}
                 <button
                   type="button"
@@ -249,7 +249,7 @@ const Navbar = ({
 
               <span ref={tradesMenu} className="">
                 {tradeRequests.received.length > 0 && (
-                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-sky-400 opacity-75"></div>
+                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-red-500"></div>
                 )}
                 <button
                   type="button"
