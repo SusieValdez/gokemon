@@ -3,18 +3,12 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { getFriendRequests } from "./api/friendRequests";
 import { selectPokemon } from "./api/pokemon";
 import { getTradeRequests } from "./api/tradeRequests";
-import { getUser } from "./api/users";
+import { getUser, UserSession } from "./api/users";
 import Navbar from "./components/Navbar";
 import HomePage from "./components/pages/Home";
 import UserPage from "./components/pages/User";
 import PokemonCard from "./components/PokemonCard";
-import {
-  FriendRequest,
-  OwnedPokemon,
-  Pokemon,
-  TradeRequest,
-  UserSession,
-} from "./models";
+import { FriendRequest, OwnedPokemon, Pokemon, TradeRequest } from "./models";
 
 function App() {
   const [userSession, setUserSession_] = useState<UserSession>();

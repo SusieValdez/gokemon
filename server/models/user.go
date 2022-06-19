@@ -1,14 +1,10 @@
 package models
 
-import "time"
-
 type User struct {
-	ID                uint      `json:"id" gorm:"primary_key"`
-	DiscordID         string    `json:"discordId"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
-	Username          string    `json:"username"`
-	ProfilePictureURL string    `json:"profilePictureUrl"`
+	ID                uint   `json:"id" gorm:"primary_key"`
+	DiscordID         string `json:"discordId"`
+	Username          string `json:"username"`
+	ProfilePictureURL string `json:"profilePictureUrl"`
 	// OwnedPokemonOld               []Pokemon      `json:"ownedPokemon" gorm:"many2many:user_pokemon;"`
 	OwnedPokemon                  []OwnedPokemon `json:"ownedPokemon" gorm:"foreignKey:OwnerID"`
 	PendingPokemon                []OwnedPokemon `json:"pendingPokemon" gorm:"foreignKey:PendingOwnerID"`
@@ -25,19 +21,15 @@ type OwnedPokemon struct {
 }
 
 type FriendRequest struct {
-	ID        uint      `json:"id" gorm:"primary_key"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	UserID    uint      `json:"userId"`
-	User      User      `json:"user"`
-	FriendID  uint      `json:"friendId"`
-	Friend    User      `json:"friend"`
+	ID       uint `json:"id" gorm:"primary_key"`
+	UserID   uint `json:"userId"`
+	User     User `json:"user"`
+	FriendID uint `json:"friendId"`
+	Friend   User `json:"friend"`
 }
 
 type TradeRequest struct {
 	ID              uint         `json:"id" gorm:"primary_key"`
-	CreatedAt       time.Time    `json:"created_at"`
-	UpdatedAt       time.Time    `json:"updated_at"`
 	UserID          uint         `json:"userId"`
 	User            User         `json:"user"`
 	UserPokemonID   uint         `json:"userPokemonId"`
