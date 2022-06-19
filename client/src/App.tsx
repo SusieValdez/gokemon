@@ -101,25 +101,27 @@ function App() {
   ).reduce(
     (acc, p) => ({
       ...acc,
-      [p.pokemon.id]: p,
+      [p.pokemon.id]: acc[p.pokemon.id] ? [...acc[p.pokemon.id], p] : [p],
     }),
-    {} as Record<number, OwnedPokemon>
+    {} as Record<number, OwnedPokemon[]>
   );
-  const loggedInUserOwnsPokemon = (p: Pokemon) =>
+  const loggedInUserOwnsPokemon = (p: Pokemon): boolean =>
     loggedInUserOwnedPokemonMap[p.id] !== undefined;
-  const getLoggedInUserOwnedPokemon = (id: number) =>
-    loggedInUserOwnedPokemonMap[id];
+  const getLoggedInUserOwnedPokemon = (
+    id: number
+  ): OwnedPokemon[] | undefined => loggedInUserOwnedPokemonMap[id];
 
   const userOwnedPokemonMap = (userSession?.user?.ownedPokemon ?? []).reduce(
     (acc, p) => ({
       ...acc,
-      [p.pokemon.id]: p,
+      [p.pokemon.id]: acc[p.pokemon.id] ? [...acc[p.pokemon.id], p] : [p],
     }),
-    {} as Record<number, OwnedPokemon>
+    {} as Record<number, OwnedPokemon[]>
   );
-  const userOwnsPokemon = (p: Pokemon) =>
+  const userOwnsPokemon = (p: Pokemon): boolean =>
     userOwnedPokemonMap[p.id] !== undefined;
-  const getUserOwnedPokemon = (id: number) => userOwnedPokemonMap[id];
+  const getUserOwnedPokemon = (id: number): OwnedPokemon[] | undefined =>
+    userOwnedPokemonMap[id];
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 text-white">
