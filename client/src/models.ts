@@ -5,16 +5,32 @@ export const PokemonType = z.object({
 });
 export type PokemonType = z.infer<typeof PokemonType>;
 
-export const Pokemon = z.object({
+export const PokemonForm = z.object({
   id: z.number(),
   name: z.string(),
   types: z.array(PokemonType),
+  sprites: z.object({
+    frontDefault: z.string(),
+    frontFemale: z.string(),
+    frontShiny: z.string(),
+    frontShinyFemale: z.string(),
+  }),
+});
+
+export const Pokemon = z.object({
+  id: z.number(),
+  name: z.string(),
+  hasGenderDifferences: z.boolean(),
+  isLegendary: z.boolean(),
+  isMythical: z.boolean(),
+  forms: z.array(PokemonForm),
 });
 export type Pokemon = z.infer<typeof Pokemon>;
 
 export const OwnedPokemon = z.object({
   id: z.number(),
   pokemon: Pokemon,
+  formIndex: z.number(),
   isShiny: z.boolean(),
 });
 export type OwnedPokemon = z.infer<typeof OwnedPokemon>;

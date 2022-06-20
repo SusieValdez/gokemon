@@ -16,7 +16,7 @@ const ShinyRate = 1.0 / 100.0
 
 func (s *Server) GetPokemons(c *gin.Context) {
 	var pokemon []models.Pokemon
-	s.DB.Preload("Types").Find(&pokemon)
+	s.DB.Preload("Forms").Preload("Forms.Types").Preload("Forms.Sprites").Find(&pokemon)
 	c.JSON(http.StatusOK, pokemon)
 }
 

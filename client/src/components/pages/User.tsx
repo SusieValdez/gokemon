@@ -278,7 +278,10 @@ function UserPage({
                   ignoreCase: true,
                   ignoreAccents: true,
                   matchFrom: "any",
-                  stringify: (option) => option.data.value.pokemon.name,
+                  stringify: (option) =>
+                    (option.data.value.isShiny ? "Shiny " : "") +
+                    option.data.value.pokemon.forms[option.data.value.formIndex]
+                      .name,
                   trim: true,
                 })}
                 options={loggedInUser.ownedPokemon.map((p) => ({
@@ -286,7 +289,8 @@ function UserPage({
                   label: (
                     <div className="flex items-center">
                       <img src={spriteUrl(p)} />
-                      {p.pokemon.name}
+                      {p.isShiny ? "Shiny " : ""}
+                      {p.pokemon.forms[p.formIndex].name}
                     </div>
                   ),
                 }))}
@@ -295,7 +299,11 @@ function UserPage({
                   label: (
                     <div className="flex items-center">
                       <img src={spriteUrl(offeredPokemon)} />
-                      {offeredPokemon.pokemon.name}
+                      {offeredPokemon.isShiny ? "Shiny " : ""}
+                      {
+                        offeredPokemon.pokemon.forms[offeredPokemon.formIndex]
+                          .name
+                      }
                     </div>
                   ),
                 }}
@@ -318,7 +326,10 @@ function UserPage({
                   ignoreCase: true,
                   ignoreAccents: true,
                   matchFrom: "any",
-                  stringify: (option) => option.data.value.pokemon.name,
+                  stringify: (option) =>
+                    (option.data.value.isShiny ? "Shiny " : "") +
+                    option.data.value.pokemon.forms[option.data.value.formIndex]
+                      .name,
                   trim: true,
                 })}
                 value={{
@@ -326,7 +337,11 @@ function UserPage({
                   label: (
                     <div className="flex items-center">
                       <img src={spriteUrl(wantedPokemon)} />
-                      {wantedPokemon.pokemon.name}
+                      {wantedPokemon.isShiny ? "Shiny " : ""}
+                      {
+                        wantedPokemon.pokemon.forms[wantedPokemon.formIndex]
+                          .name
+                      }
                     </div>
                   ),
                 }}
@@ -335,7 +350,8 @@ function UserPage({
                   label: (
                     <div className="flex items-center">
                       <img src={spriteUrl(p)} />
-                      {p.pokemon.name}
+                      {p.isShiny ? "Shiny " : ""}
+                      {p.pokemon.forms[p.formIndex].name}
                     </div>
                   ),
                 }))}
@@ -378,6 +394,7 @@ function UserPage({
                       : userOwnedPokemon[0])) ?? {
                     id: 0,
                     pokemon: p,
+                    formIndex: 0,
                     isShiny: false,
                   }
                 }

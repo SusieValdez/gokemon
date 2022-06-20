@@ -19,21 +19,29 @@ func (s *Server) GetTradeRequests(c *gin.Context) {
 	s.DB.First(&user, "username = ?", username)
 	sentTradeRequests := []models.TradeRequest{}
 	s.DB.Preload("User").
-		Preload("UserPokemon.Pokemon.Types").
+		Preload("UserPokemon.Pokemon.Forms.Sprites").
+		Preload("UserPokemon.Pokemon.Forms.Types").
+		Preload("UserPokemon.Pokemon.Forms").
 		Preload("UserPokemon.Pokemon").
 		Preload("UserPokemon").
 		Preload("Friend").
-		Preload("FriendPokemon.Pokemon.Types").
+		Preload("FriendPokemon.Pokemon.Forms.Sprites").
+		Preload("FriendPokemon.Pokemon.Forms.Types").
+		Preload("FriendPokemon.Pokemon.Forms").
 		Preload("FriendPokemon.Pokemon").
 		Preload("FriendPokemon").
 		Find(&sentTradeRequests, "user_id = ?", user.ID)
 	receivedTradeRequests := []models.TradeRequest{}
 	s.DB.Preload("User").
-		Preload("UserPokemon.Pokemon.Types").
+		Preload("UserPokemon.Pokemon.Forms.Sprites").
+		Preload("UserPokemon.Pokemon.Forms.Types").
+		Preload("UserPokemon.Pokemon.Forms").
 		Preload("UserPokemon.Pokemon").
 		Preload("UserPokemon").
 		Preload("Friend").
-		Preload("FriendPokemon.Pokemon.Types").
+		Preload("FriendPokemon.Pokemon.Forms.Sprites").
+		Preload("FriendPokemon.Pokemon.Forms.Types").
+		Preload("FriendPokemon.Pokemon.Forms").
 		Preload("FriendPokemon.Pokemon").
 		Preload("FriendPokemon").
 		Find(&receivedTradeRequests, "friend_id = ?", user.ID)
