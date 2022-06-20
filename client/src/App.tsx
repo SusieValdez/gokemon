@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { getFriendRequests } from "./api/friendRequests";
 import { selectPokemon } from "./api/pokemon";
@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import HomePage from "./components/pages/Home";
 import UserPage from "./components/pages/User";
 import PokemonCard from "./components/PokemonCard";
+import { useOnClickOutsideElements } from "./hooks/useOnClickOutsideElement";
 import { FriendRequest, OwnedPokemon, Pokemon, TradeRequest } from "./models";
 
 function App() {
@@ -29,16 +30,33 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const selectModal = useRef<HTMLDivElement>(null);
+  const selectModalButton = useRef<HTMLSpanElement>(null);
+  const [selectModalOpen, setSelectModalOpen] = useState(false);
+
+  useOnClickOutsideElements([selectModal, selectModalButton], () => {
+    setSelectModalOpen(false);
+  });
+
+  const userId: string | undefined = location.pathname.slice(1);
+
   useEffect(() => {
-    const userId = location.pathname.slice(1);
     getUser(userId).then((userSession) => {
       if (userSession?.loggedInUser && !userSession.user) {
         navigate(`/${userSession.loggedInUser.username}`, { replace: true });
         return;
       }
-      setUserSession(userSession);
     });
   }, [location]);
+
+  useEffect(() => {
+    getUser(userId).then((userSession) => {
+      setUserSession(userSession);
+      if (userSession?.loggedInUser?.pendingPokemon.length ?? 0 > 0) {
+        setSelectModalOpen(true);
+      }
+    });
+  }, []);
 
   const [friendRequests, setFriendRequests] = useState<{
     sent: FriendRequest[];
@@ -82,9 +100,10 @@ function App() {
         secondsRemaining === 0 &&
         userSession.loggedInUser.pendingPokemon.length === 0
       ) {
-        getUser(userSession.loggedInUser.username).then((userSession) =>
-          setUserSession(userSession)
-        );
+        getUser(userSession.loggedInUser.username).then(({ loggedInUser }) => {
+          setUserSession({ ...userSession, loggedInUser });
+          setSelectModalOpen(true);
+        });
       }
     }, 1000);
     return () => {
@@ -139,6 +158,9 @@ function App() {
             friendRequests={friendRequests}
             tradeRequests={tradeRequests}
             secondsRemainingUntilNewPokemon={secondsRemainingUntilNewPokemon}
+            selectModalButton={selectModalButton}
+            selectModalOpen={selectModalOpen}
+            setSelectModalOpen={setSelectModalOpen}
           />
           <div className="p-4 mx-auto pt-20">
             <Routes>
@@ -162,9 +184,23 @@ function App() {
             </Routes>
           </div>
           {userSession.loggedInUser &&
-            userSession.loggedInUser.pendingPokemon.length > 0 && (
-              <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4 z-30">
-                <h2 className="text-3xl mb-4">Select a Pokemon!</h2>
+            userSession.loggedInUser.pendingPokemon.length > 0 &&
+            selectModalOpen && (
+              <div
+                ref={selectModal}
+                className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4 z-30"
+              >
+                <div className="flex justify-between">
+                  <h1 className="text-3xl text-center mb-5">
+                    Select a Pokemon!
+                  </h1>
+                  <span
+                    className="text-3xl cursor-pointer hover:brightness-75"
+                    onClick={() => setSelectModalOpen(false)}
+                  >
+                    ❌
+                  </span>
+                </div>
                 <div className="gap-2 grid grid-cols-3">
                   {userSession.loggedInUser.pendingPokemon.map((p, i) => (
                     <div key={p.id} className="relative w-full">

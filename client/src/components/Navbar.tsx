@@ -3,6 +3,7 @@ import Pokeball from "../assets/pokeball.png";
 import NotificationIcon from "../assets/bell-solid.svg";
 import FriendListIcon from "../assets/user-group-solid.svg";
 import TradeRequestIcon from "../assets/retweet-solid.svg";
+import PokeballIcon from "../assets/pokeball.svg";
 import { TradeRequest, User } from "../models";
 import { useEffect, useRef, useState } from "react";
 import { useElementClientRect } from "../hooks/useElementClientRect";
@@ -27,6 +28,9 @@ type NavbarProps = {
     received: TradeRequest[];
   };
   secondsRemainingUntilNewPokemon?: number;
+  selectModalButton: React.RefObject<HTMLSpanElement>;
+  selectModalOpen: boolean;
+  setSelectModalOpen: (open: boolean) => void;
 };
 
 type MenuType = "user" | "friends" | "notifications" | "trade-requests";
@@ -36,6 +40,9 @@ const Navbar = ({
   friendRequests,
   tradeRequests,
   secondsRemainingUntilNewPokemon,
+  selectModalButton,
+  selectModalOpen,
+  setSelectModalOpen,
 }: NavbarProps) => {
   const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
   const userMenu = useRef<HTMLDivElement>(null);
@@ -89,7 +96,7 @@ const Navbar = ({
           </span>
         </Link>
         {secondsRemainingUntilNewPokemon !== undefined && (
-          <span>
+          <span className="mt-1">
             {secondsRemainingUntilNewPokemon >= 0 &&
               convertSeconds(secondsRemainingUntilNewPokemon)}
           </span>
@@ -97,6 +104,32 @@ const Navbar = ({
         <div className="flex items-center">
           {loggedInUser ? (
             <>
+              <span ref={selectModalButton}>
+                {loggedInUser.pendingPokemon.length > 0 && (
+                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-red-500"></div>
+                )}
+                <button
+                  type="button"
+                  className={`flex mr-5 text-sm outline-none ${
+                    loggedInUser.pendingPokemon.length > 0 && selectModalOpen
+                      ? "brightness-75"
+                      : "brightness-100"
+                  }`}
+                  aria-expanded={
+                    loggedInUser.pendingPokemon.length > 0 && selectModalOpen
+                  }
+                  data-dropdown-toggle="dropdown"
+                  onClick={() => setSelectModalOpen(!selectModalOpen)}
+                >
+                  <span className="sr-only">Open trade requests menu</span>
+                  <img
+                    className="w-6 h-6 mt-1 md:w-8 md:h-8"
+                    style={{ filter: "invert(100%)" }}
+                    src={PokeballIcon}
+                    alt="trade request icon"
+                  />
+                </button>
+              </span>
               <span ref={friendsMenu} className="">
                 <button
                   type="button"
@@ -244,7 +277,6 @@ const Navbar = ({
                   </div>
                 )}
               </span>
-
               <span ref={tradesMenu} className="">
                 {tradeRequests.received.length > 0 && (
                   <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-red-500"></div>
