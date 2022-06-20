@@ -393,6 +393,17 @@ function UserPage({
           ref={selectedSpeciesModal}
           className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-10 left-4 right-4 z-10"
         >
+          <div className="flex justify-between">
+            <h1 className="text-3xl text-center mb-5">
+              {selectedSpecies.name} Variations
+            </h1>
+            <span
+              className="text-3xl cursor-pointer hover:brightness-75"
+              onClick={() => setSelectedSpecies(undefined)}
+            >
+              ❌
+            </span>
+          </div>
           <div className="bg-white p-6 rounded-md grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 overflow-scroll max-h-[75vh]">
             {selectedSpecies.forms.map((form, i) => {
               const userOwnedPokemons = getUserOwnedPokemon(selectedSpecies.id);
