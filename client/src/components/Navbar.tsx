@@ -80,7 +80,7 @@ const Navbar = ({
   };
 
   return (
-    <nav className="border-gray-200 px-2 sm:px-4 py-2.5 bg-gray-800 fixed w-full">
+    <nav className="border-gray-200 px-2 sm:px-4 py-2.5 bg-gray-800 fixed w-full z-10">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
         <Link to="/" className="flex items-center">
           <img src={Pokeball} className="mr-3 h-6 sm:h-9" alt="Logo" />

@@ -157,7 +157,7 @@ function App() {
           </div>
           {userSession.loggedInUser &&
             userSession.loggedInUser.pendingPokemon.length > 0 && (
-              <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4">
+              <div className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-20 left-4 right-4 z-30">
                 <h2 className="text-3xl mb-4">Select a Pokemon!</h2>
                 <div className="gap-2 grid grid-cols-3">
                   {userSession.loggedInUser.pendingPokemon.map((p, i) => (
