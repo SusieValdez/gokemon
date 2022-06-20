@@ -37,6 +37,7 @@ const PokemonCard: React.FC<PokemonCardProps> = ({
   const {
     pokemon: { id, name, forms },
     formIndex,
+    isShiny,
   } = pokemon;
   const form = forms[formIndex];
   return (
@@ -53,7 +54,10 @@ const PokemonCard: React.FC<PokemonCardProps> = ({
       key={id}
       onClick={onClick}
     >
-      <h2 className="text-center text-sm md:text-lg font-bold">{name}</h2>
+      <h2 className="text-center text-sm md:text-lg font-bold">
+        {isShiny && "Shiny "}
+        {form.name}
+      </h2>
       <div>
         <img
           className={`[image-rendering:pixelated] w-full ${imgClassName ?? ""}`}

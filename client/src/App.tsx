@@ -107,9 +107,6 @@ function App() {
   );
   const loggedInUserOwnsPokemon = (p: Pokemon): boolean =>
     loggedInUserOwnedPokemonMap[p.id] !== undefined;
-  const getLoggedInUserOwnedPokemon = (
-    id: number
-  ): OwnedPokemon[] | undefined => loggedInUserOwnedPokemonMap[id];
 
   const userOwnedPokemonMap = (userSession?.user?.ownedPokemon ?? []).reduce(
     (acc, p) => ({
@@ -118,8 +115,18 @@ function App() {
     }),
     {} as Record<number, OwnedPokemon[]>
   );
-  const userOwnsPokemon = (p: Pokemon): boolean =>
-    userOwnedPokemonMap[p.id] !== undefined;
+  const userOwnsPokemon = (p: Pokemon, formIndex?: number): boolean => {
+    if (!userOwnedPokemonMap[p.id]) {
+      return false;
+    }
+    if (formIndex !== undefined) {
+      return (
+        userOwnedPokemonMap[p.id].find((p) => p.formIndex === formIndex) !=
+        undefined
+      );
+    }
+    return userOwnedPokemonMap[p.id].length > 0;
+  };
   const getUserOwnedPokemon = (id: number): OwnedPokemon[] | undefined =>
     userOwnedPokemonMap[id];
 
@@ -144,7 +151,6 @@ function App() {
                       sentFriendRequests={friendRequests.sent}
                       user={userSession.user}
                       loggedInUserOwnsPokemon={loggedInUserOwnsPokemon}
-                      getLoggedInUserOwnedPokemon={getLoggedInUserOwnedPokemon}
                       userOwnsPokemon={userOwnsPokemon}
                       getUserOwnedPokemon={getUserOwnedPokemon}
                     />

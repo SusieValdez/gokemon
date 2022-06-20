@@ -23,7 +23,7 @@ func (s *Server) GetPokemons(c *gin.Context) {
 func (s *Server) GetRandomPokemon() models.Pokemon {
 	randomID := rand.Intn(models.MaxPokemonId-1) + 1
 	var pokemon models.Pokemon
-	s.DB.First(&pokemon, randomID)
+	s.DB.Preload("Forms").First(&pokemon, randomID)
 	return pokemon
 }
 
@@ -43,6 +43,7 @@ func (s *Server) NewPokemonTimer(userID uint) {
 		ownedPokemon := models.OwnedPokemon{
 			PendingOwnerID: &user.ID,
 			Pokemon:        p,
+			FormIndex:      uint(rand.Intn(len(p.Forms))),
 			IsShiny:        rand.Float64() <= ShinyRate,
 		}
 		s.DB.Create(&ownedPokemon)

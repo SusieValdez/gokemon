@@ -8,7 +8,10 @@ import { getPokemons, spriteUrl } from "../../api/pokemon";
 import { postTradeRequest } from "../../api/tradeRequests";
 import { deleteFriendship } from "../../api/users";
 import { useLocalStorageState } from "../../hooks/useLocalStorageState";
-import { useOnClickOutsideElement } from "../../hooks/useOnClickOutsideElement";
+import {
+  useOnClickOutsideElement,
+  useOnClickOutsideElements,
+} from "../../hooks/useOnClickOutsideElement";
 import { FriendRequest, OwnedPokemon, Pokemon, User } from "../../models";
 import PokemonCard from "../PokemonCard";
 
@@ -17,8 +20,7 @@ type UserProps = {
   sentFriendRequests: FriendRequest[];
   user: User;
   loggedInUserOwnsPokemon: (p: Pokemon) => boolean;
-  getLoggedInUserOwnedPokemon: (id: number) => OwnedPokemon[] | undefined;
-  userOwnsPokemon: (p: Pokemon) => boolean;
+  userOwnsPokemon: (p: Pokemon, formIndex?: number) => boolean;
   getUserOwnedPokemon: (id: number) => OwnedPokemon[] | undefined;
 };
 
@@ -65,7 +67,6 @@ function UserPage({
   loggedInUser,
   sentFriendRequests,
   loggedInUserOwnsPokemon,
-  getLoggedInUserOwnedPokemon,
   userOwnsPokemon,
   getUserOwnedPokemon,
 }: UserProps) {
@@ -75,6 +76,8 @@ function UserPage({
     useLocalStorageState<PokemonFilter>("userPokemonFilter", "owned");
   const [loggedInUserPokemonFilter, setLoggedInUserPokemonFilter] =
     useLocalStorageState<PokemonFilter>("loggedInUserPokemonFilter", "all");
+
+  const [selectedSpecies, setSelectedSpecies] = useState<Pokemon>();
 
   const [offeredPokemon, setOfferedPokemon] = useState<
     OwnedPokemon | undefined
@@ -96,6 +99,13 @@ function UserPage({
   const tradeModal = useRef<HTMLDivElement>(null);
 
   useOnClickOutsideElement(tradeModal, () => {
+    setWantedPokemon(undefined);
+  });
+
+  const selectedSpeciesModal = useRef<HTMLDivElement>(null);
+
+  useOnClickOutsideElements([tradeModal, selectedSpeciesModal], () => {
+    setSelectedSpecies(undefined);
     setWantedPokemon(undefined);
   });
 
@@ -378,20 +388,59 @@ function UserPage({
         </div>
       )}
 
+      {selectedSpecies && (
+        <div
+          ref={selectedSpeciesModal}
+          className="mb-4 text-black fixed bg-blue-200 p-4 rounded-md top-10 left-4 right-4 z-10"
+        >
+          <div className="bg-white p-6 rounded-md grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 overflow-scroll max-h-[75vh]">
+            {selectedSpecies.forms.map((form, i) => {
+              const userOwnedPokemons = getUserOwnedPokemon(selectedSpecies.id);
+              const userOwnedPokemon =
+                userOwnedPokemons &&
+                userOwnedPokemons.find(({ formIndex }) => formIndex === i);
+              return (
+                <PokemonCard
+                  key={form.id}
+                  pokemon={
+                    userOwnedPokemon ?? {
+                      id: 0,
+                      pokemon: selectedSpecies,
+                      formIndex: i,
+                      isShiny: false,
+                    }
+                  }
+                  onClick={() => {
+                    if (canInteractWithUser) {
+                      setWantedPokemon(userOwnedPokemon);
+                    }
+                  }}
+                  imgClassName={`${
+                    !userOwnsPokemon(selectedSpecies, i) && "brightness-0"
+                  }`}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="bg-white p-6 rounded-md grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
         {allPokemon.length === 0 ? (
           <div>loading...</div>
         ) : (
           pokemons.map((p) => {
-            const userOwnedPokemon = getUserOwnedPokemon(p.id);
+            const userOwnedPokemons = getUserOwnedPokemon(p.id);
+            const userOwnedPokemon =
+              userOwnedPokemons &&
+              (userOwnedPokemons.find((p) => p.isShiny)
+                ? userOwnedPokemons.find((p) => p.isShiny)
+                : userOwnedPokemons[0]);
             return (
               <PokemonCard
                 key={p.id}
                 pokemon={
-                  (userOwnedPokemon &&
-                    (userOwnedPokemon.find((p) => p.isShiny)
-                      ? userOwnedPokemon.find((p) => p.isShiny)
-                      : userOwnedPokemon[0])) ?? {
+                  userOwnedPokemon ?? {
                     id: 0,
                     pokemon: p,
                     formIndex: 0,
@@ -399,11 +448,17 @@ function UserPage({
                   }
                 }
                 onClick={() => {
-                  if (canInteractWithUser) {
-                    setWantedPokemon(userOwnedPokemon && userOwnedPokemon[0]);
+                  if (p.forms.length === 1) {
+                    if (canInteractWithUser) {
+                      setWantedPokemon(userOwnedPokemon);
+                    }
+                  } else {
+                    setSelectedSpecies(p);
                   }
                 }}
-                imgClassName={`${!userOwnsPokemon(p) && "brightness-0"}`}
+                imgClassName={`${
+                  userOwnedPokemon === undefined && "brightness-0"
+                }`}
               />
             );
           })

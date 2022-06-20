@@ -7,11 +7,12 @@ export const spriteUrl = ({
   formIndex,
   isShiny,
 }: OwnedPokemon) => {
+  const defaultForm = forms[0];
   const form = forms[formIndex];
   if (isShiny) {
-    return form.sprites.frontShiny;
+    return form.sprites.frontShiny || defaultForm.sprites.frontShiny;
   }
-  return form.sprites.frontDefault;
+  return form.sprites.frontDefault || defaultForm.sprites.frontDefault;
 };
 
 export const getPokemons = async (): Promise<Pokemon[]> =>
