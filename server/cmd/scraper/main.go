@@ -62,7 +62,7 @@ func main() {
 		pokemon := models.Pokemon{
 			ID:                   uint(pokemonSpecies.ID),
 			HasGenderDifferences: pokemonSpecies.HasGenderDifferences,
-			IsLengendary:         pokemonSpecies.IsLengendary,
+			IsLegendary:          pokemonSpecies.IsLegendary,
 			IsMythical:           pokemonSpecies.IsMythical,
 			Forms:                []models.PokemonForm{},
 		}

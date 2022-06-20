@@ -15,7 +15,7 @@ type PokemonSpecies struct {
 		Name string `json:"name"`
 	} `json:"names"`
 	HasGenderDifferences bool `json:"has_gender_differences"`
-	IsLengendary         bool `json:"is_legendary"`
+	IsLegendary          bool `json:"is_legendary"`
 	IsMythical           bool `json:"is_mythical"`
 	Varieties            []struct {
 		Pokemon struct {

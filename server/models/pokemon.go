@@ -6,7 +6,7 @@ type Pokemon struct {
 	ID                   uint          `json:"id" gorm:"primary_key"`
 	Name                 string        `json:"name"`
 	HasGenderDifferences bool          `json:"hasGenderDifferences"`
-	IsLengendary         bool          `json:"isLegendary"`
+	IsLegendary          bool          `json:"isLegendary"`
 	IsMythical           bool          `json:"isMythical"`
 	Forms                []PokemonForm `json:"forms"`
 }
