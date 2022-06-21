@@ -9,7 +9,13 @@ import HomePage from "./components/pages/Home";
 import UserPage from "./components/pages/User";
 import PokemonCard from "./components/PokemonCard";
 import { useOnClickOutsideElements } from "./hooks/useOnClickOutsideElement";
-import { FriendRequest, OwnedPokemon, Pokemon, TradeRequest } from "./models";
+import {
+  FriendRequest,
+  OwnedPokemon,
+  Pokemon,
+  TradeRequest,
+  User,
+} from "./models";
 
 function App() {
   const [userSession, setUserSession_] = useState<UserSession>();
@@ -113,7 +119,36 @@ function App() {
   }, [userSession]);
 
   const onClickPendingPokemon = (index: number) => {
-    selectPokemon(index).then(() => window.location.reload());
+    selectPokemon(index).then(() => {
+      if (!userSession?.loggedInUser || !userSession?.user) {
+        return;
+      }
+      const { loggedInUser, user } = userSession;
+      const newLoggedInUser: User = {
+        ...loggedInUser,
+        pendingPokemon: [],
+        ownedPokemon: [
+          ...loggedInUser.ownedPokemon,
+          loggedInUser.pendingPokemon[index],
+        ],
+      };
+      const newUser: User =
+        loggedInUser.id === user.id
+          ? {
+              ...user,
+              pendingPokemon: [],
+              ownedPokemon: [
+                ...loggedInUser.ownedPokemon,
+                loggedInUser.pendingPokemon[index],
+              ],
+            }
+          : user;
+      setUserSession({
+        ...userSession,
+        loggedInUser: newLoggedInUser,
+        user: newUser,
+      });
+    });
   };
 
   const loggedInUserOwnedPokemonMap = (
