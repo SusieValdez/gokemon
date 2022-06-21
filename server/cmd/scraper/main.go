@@ -14,6 +14,11 @@ import (
 
 const MAX_POKEMON_ID = 898
 
+type species struct {
+	pokemon models.Pokemon
+	forms   []models.PokemonForm
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -38,111 +43,115 @@ func main() {
 	db.AutoMigrate(&models.Sprites{})
 	db.AutoMigrate(&models.Type{})
 
-	speciesChans := []chan pokeapi.PokemonSpecies{}
+	speciesChans := []chan species{}
 
 	for id := 1; id <= MAX_POKEMON_ID; id++ {
-		speciesChans = append(speciesChans, make(chan pokeapi.PokemonSpecies))
+		speciesChans = append(speciesChans, make(chan species))
 	}
 
 	for id := 1; id <= MAX_POKEMON_ID; id++ {
 		go func(id int) {
 			fmt.Printf("starting %d\n", id)
-			species, err := pokeapi.GetPokemonSpecies(fmt.Sprintf("%d", id))
+			pokemonSpecies, err := pokeapi.GetPokemonSpecies(fmt.Sprintf("%d", id))
 			if err != nil {
 				log.Fatalln(err)
 			}
+			var species species
+			species.pokemon = models.Pokemon{
+				ID:                   uint(pokemonSpecies.ID),
+				HasGenderDifferences: pokemonSpecies.HasGenderDifferences,
+				IsLegendary:          pokemonSpecies.IsLegendary,
+				IsMythical:           pokemonSpecies.IsMythical,
+				Forms:                []models.PokemonForm{},
+			}
+			for _, name := range pokemonSpecies.Names {
+				if name.Language.Name == "en" {
+					species.pokemon.Name = name.Name
+				}
+			}
+			if species.pokemon.Name == "" {
+				log.Fatalf("could not find name for pokemon species(%d)", pokemonSpecies.ID)
+			}
+
+			pokemonChans := []chan pokeapi.Pokemon{}
+
+			for _, variety := range pokemonSpecies.Varieties {
+				fmt.Printf("starting variation %s\n", variety.Pokemon.Name)
+				pokemonChans = append(pokemonChans, make(chan pokeapi.Pokemon))
+			}
+
+			for i, variety := range pokemonSpecies.Varieties {
+				go func(i int, name string) {
+					pokemon, err := pokeapi.GetPokemon(name)
+					if err != nil {
+						log.Fatalln(err)
+					}
+					pokemonChans[i] <- pokemon
+				}(i, variety.Pokemon.Name)
+			}
+
+			for i := range pokemonSpecies.Varieties {
+				pokemonVariety := <-pokemonChans[i]
+				pokemonFormChans := []chan pokeapi.PokemonForm{}
+
+				for _, form := range pokemonVariety.Forms {
+					fmt.Printf("starting form %s\n", form.Name)
+					pokemonFormChans = append(pokemonFormChans, make(chan pokeapi.PokemonForm))
+				}
+
+				for i, form := range pokemonVariety.Forms {
+					go func(i int, name string) {
+						form, err := pokeapi.GetPokemonForm(name)
+						if err != nil {
+							log.Fatalln(err)
+						}
+						pokemonFormChans[i] <- form
+					}(i, form.Name)
+				}
+
+				for i := range pokemonVariety.Forms {
+					pokemonForm := <-pokemonFormChans[i]
+					var types []models.Type
+					for _, pokemonType := range pokemonForm.Types {
+						types = append(types, models.Type{Name: pokemonType.Type.Name})
+					}
+					var formName string
+					if len(pokemonForm.Names) == 0 {
+						formName = species.pokemon.Name
+					} else {
+						for _, name := range pokemonForm.Names {
+							if name.Language.Name == "en" {
+								formName = name.Name
+							}
+						}
+					}
+					if formName == "" {
+						log.Fatalf("could not find name for pokemon form(%d/%d)", pokemonVariety.ID, pokemonForm.ID)
+					}
+					species.forms = append(species.forms, models.PokemonForm{
+						ID:        uint(pokemonForm.ID),
+						PokemonID: uint(pokemonSpecies.ID),
+						Name:      formName,
+						Types:     types,
+						Sprites: models.Sprites{
+							FrontDefault:     pokemonForm.Sprites.FrontDefault,
+							FrontFemale:      pokemonForm.Sprites.FrontFemale,
+							FrontShiny:       pokemonForm.Sprites.FrontShiny,
+							FrontShinyFemale: pokemonForm.Sprites.FrontShinyFemale,
+						},
+					})
+				}
+			}
+
 			speciesChans[id-1] <- species
 		}(id)
 	}
 
-	for id := uint(1); id <= MAX_POKEMON_ID; id++ {
-		pokemonSpecies := <-speciesChans[id-1]
-		pokemonChans := []chan pokeapi.Pokemon{}
-
-		pokemon := models.Pokemon{
-			ID:                   uint(pokemonSpecies.ID),
-			HasGenderDifferences: pokemonSpecies.HasGenderDifferences,
-			IsLegendary:          pokemonSpecies.IsLegendary,
-			IsMythical:           pokemonSpecies.IsMythical,
-			Forms:                []models.PokemonForm{},
-		}
-		for _, name := range pokemonSpecies.Names {
-			if name.Language.Name == "en" {
-				pokemon.Name = name.Name
-			}
-		}
-		if pokemon.Name == "" {
-			log.Fatalf("could not find name for pokemon species(%d)", pokemonSpecies.ID)
-		}
-		db.Create(&pokemon)
-
-		for _, variety := range pokemonSpecies.Varieties {
-			fmt.Printf("starting variation %s\n", variety.Pokemon.Name)
-			pokemonChans = append(pokemonChans, make(chan pokeapi.Pokemon))
-		}
-
-		for i, variety := range pokemonSpecies.Varieties {
-			go func(i int, name string) {
-				pokemon, err := pokeapi.GetPokemon(name)
-				if err != nil {
-					log.Fatalln(err)
-				}
-				pokemonChans[i] <- pokemon
-			}(i, variety.Pokemon.Name)
-		}
-
-		for i := range pokemonSpecies.Varieties {
-			pokemonVariety := <-pokemonChans[i]
-			pokemonFormChans := []chan pokeapi.PokemonForm{}
-
-			for _, form := range pokemonVariety.Forms {
-				fmt.Printf("starting form %s\n", form.Name)
-				pokemonFormChans = append(pokemonFormChans, make(chan pokeapi.PokemonForm))
-			}
-
-			for i, form := range pokemonVariety.Forms {
-				go func(i int, name string) {
-					form, err := pokeapi.GetPokemonForm(name)
-					if err != nil {
-						log.Fatalln(err)
-					}
-					pokemonFormChans[i] <- form
-				}(i, form.Name)
-			}
-
-			for i := range pokemonVariety.Forms {
-				pokemonForm := <-pokemonFormChans[i]
-				var types []models.Type
-				for _, pokemonType := range pokemonForm.Types {
-					types = append(types, models.Type{Name: pokemonType.Type.Name})
-				}
-				var formName string
-				if len(pokemonForm.Names) == 0 {
-					formName = pokemon.Name
-				} else {
-					for _, name := range pokemonForm.Names {
-						if name.Language.Name == "en" {
-							formName = name.Name
-						}
-					}
-				}
-				if formName == "" {
-					log.Fatalf("could not find name for pokemon form(%d/%d)", pokemonVariety.ID, pokemonForm.ID)
-				}
-				form := models.PokemonForm{
-					ID:        uint(pokemonForm.ID),
-					PokemonID: uint(pokemonSpecies.ID),
-					Name:      formName,
-					Types:     types,
-					Sprites: models.Sprites{
-						FrontDefault:     pokemonForm.Sprites.FrontDefault,
-						FrontFemale:      pokemonForm.Sprites.FrontFemale,
-						FrontShiny:       pokemonForm.Sprites.FrontShiny,
-						FrontShinyFemale: pokemonForm.Sprites.FrontShinyFemale,
-					},
-				}
-				db.Create(&form)
-			}
+	for id := 1; id <= MAX_POKEMON_ID; id++ {
+		species := <-speciesChans[id-1]
+		db.Create(&species.pokemon)
+		for _, form := range species.forms {
+			db.Create(&form)
 		}
 		fmt.Printf("finished %d\n", id)
 	}
