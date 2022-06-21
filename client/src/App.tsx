@@ -46,6 +46,7 @@ function App() {
         navigate(`/${userSession.loggedInUser.username}`, { replace: true });
         return;
       }
+      setUserSession(userSession);
     });
   }, [location]);
 
