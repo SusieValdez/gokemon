@@ -244,21 +244,21 @@ function App() {
                 </div>
                 <div className="gap-2 grid grid-cols-3">
                   {userSession.loggedInUser.pendingPokemon.map((p, i) => (
-                    <div key={p.id} className="relative w-full">
-                      <PokemonCard
-                        pokemon={p}
-                        onClick={() => onClickPendingPokemon(i)}
-                        imgClassName={`${
-                          loggedInUserOwnsPokemon(p.pokemon) && "grayscale"
-                        }`}
-                      >
-                        {!loggedInUserOwnsPokemon(p.pokemon) && (
-                          <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
-                            NEW!
-                          </span>
-                        )}
-                      </PokemonCard>
-                    </div>
+                    <PokemonCard
+                      key={p.id}
+                      pokemon={p}
+                      onClick={() => onClickPendingPokemon(i)}
+                      className="relative w-full"
+                      imgClassName={`${
+                        loggedInUserOwnsPokemon(p.pokemon) && "grayscale"
+                      }`}
+                    >
+                      {!loggedInUserOwnsPokemon(p.pokemon) && (
+                        <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
+                          NEW!
+                        </span>
+                      )}
+                    </PokemonCard>
                   ))}
                 </div>
               </div>

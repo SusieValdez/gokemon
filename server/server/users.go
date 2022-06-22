@@ -1,11 +1,13 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/clause"
+	"susie.mx/gokemon/dbtypes"
 	"susie.mx/gokemon/models"
 )
 
@@ -124,5 +126,24 @@ func (s *Server) AcceptTrade(c *gin.Context) {
 	s.DB.Delete(&models.TradeRequest{}, "friend_id = ? AND friend_pokemon_id = ?", user.ID, userPokemon.ID)
 	s.DB.Delete(&models.TradeRequest{}, "user_id = ? AND user_pokemon_id = ?", friend.ID, friendPokemon.ID)
 	s.DB.Delete(&models.TradeRequest{}, "friend_id = ? AND friend_pokemon_id = ?", friend.ID, friendPokemon.ID)
+	c.JSON(http.StatusOK, "ok")
+}
+
+type UpdatePreferredFormRequest struct {
+	PokemonID uint `json:"pokemonId"`
+	FormIndex uint `json:"formIndex"`
+}
+
+func (s *Server) UpdatePreferredForm(c *gin.Context) {
+	var request UpdatePreferredFormRequest
+	c.BindJSON(&request)
+	session := sessions.Default(c)
+	loggedInUsername := session.Get("username")
+	s.DB.
+		Model(&models.User{}).
+		Where("username = ?", loggedInUsername).
+		Update("PreferredForms", dbtypes.JSON{
+			fmt.Sprint(request.PokemonID): request.FormIndex,
+		})
 	c.JSON(http.StatusOK, "ok")
 }

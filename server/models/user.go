@@ -1,5 +1,7 @@
 package models
 
+import "susie.mx/gokemon/dbtypes"
+
 type User struct {
 	ID                uint   `json:"id" gorm:"primary_key"`
 	DiscordID         string `json:"discordId"`
@@ -10,6 +12,7 @@ type User struct {
 	PendingPokemon                []OwnedPokemon `json:"pendingPokemon" gorm:"foreignKey:PendingOwnerID"`
 	Friends                       []*User        `json:"friends" gorm:"many2many:user_friends"`
 	NextPokemonSelectionTimestamp int64          `json:"nextPokemonSelectionTimestamp"`
+	PreferredForms                dbtypes.JSON   `json:"preferredForms" gorm:"type:jsonb"`
 }
 
 type OwnedPokemon struct {

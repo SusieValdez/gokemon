@@ -40,6 +40,7 @@ export const PartialUser = z.object({
   username: z.string(),
   profilePictureUrl: z.string(),
   nextPokemonSelectionTimestamp: z.number(), // millis since epoch
+  preferredForms: z.nullable(z.record(z.number())),
 });
 export const User = PartialUser.extend({
   ownedPokemon: z.array(OwnedPokemon),

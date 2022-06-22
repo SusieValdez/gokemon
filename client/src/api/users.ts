@@ -47,3 +47,15 @@ export const acceptTrade = (tradeRequestId: number) =>
   })
     .then((res) => res.json())
     .then((json) => z.string().parse(json));
+
+export const updatePreferredForm = (pokemonId: number, formIndex: number) =>
+  fetch(`${SERVER_BASE_URL}/api/v1/user/preferredForm`, {
+    method: "PUT",
+    credentials: "include",
+    body: JSON.stringify({
+      pokemonId,
+      formIndex,
+    }),
+  })
+    .then((res) => res.json())
+    .then((json) => z.string().parse(json));

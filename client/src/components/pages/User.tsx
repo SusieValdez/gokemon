@@ -6,7 +6,7 @@ import {
 } from "../../api/friendRequests";
 import { getPokemons, spriteUrl } from "../../api/pokemon";
 import { postTradeRequest } from "../../api/tradeRequests";
-import { deleteFriendship } from "../../api/users";
+import { deleteFriendship, updatePreferredForm } from "../../api/users";
 import { useLocalStorageState } from "../../hooks/useLocalStorageState";
 import {
   useOnClickOutsideElement,
@@ -14,6 +14,7 @@ import {
 } from "../../hooks/useOnClickOutsideElement";
 import { FriendRequest, OwnedPokemon, Pokemon, User } from "../../models";
 import PokemonCard from "../PokemonCard";
+import EyeIcon from "../../assets/eye-solid.svg";
 
 type UserProps = {
   loggedInUser: User | null;
@@ -133,6 +134,15 @@ function UserPage({
     }
     postTradeRequest(offeredPokemon.id, user.id, wantedPokemon.id).then(() => {
       setWantedPokemon(undefined);
+      getUserData();
+    });
+  };
+
+  const onClickUpdatePreferredFormButton = (
+    pokemonId: number,
+    formIndex: number
+  ) => {
+    updatePreferredForm(pokemonId, formIndex).then(() => {
       getUserData();
     });
   };
@@ -413,6 +423,8 @@ function UserPage({
               const userOwnedPokemon =
                 userOwnedPokemons &&
                 userOwnedPokemons.find(({ formIndex }) => formIndex === i);
+              const preferredFormIndex =
+                user.preferredForms && user.preferredForms[selectedSpecies.id];
               return (
                 <PokemonCard
                   key={form.id}
@@ -429,10 +441,31 @@ function UserPage({
                       setWantedPokemon(userOwnedPokemon);
                     }
                   }}
+                  className="relative"
                   imgClassName={`${
                     !userOwnsPokemon(selectedSpecies, i) && "brightness-0"
                   }`}
-                />
+                >
+                  {userOwnedPokemon && loggedInUser?.id === user.id && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onClickUpdatePreferredFormButton(selectedSpecies.id, i)
+                      }
+                      className="hover:brightness-75"
+                    >
+                      <img
+                        className="w-6 h-6 mt-1 md:w-8 md:h-8"
+                        style={{
+                          filter:
+                            preferredFormIndex === i ? "" : "invert(100%)",
+                        }}
+                        src={EyeIcon}
+                        alt="trade request icon"
+                      />
+                    </button>
+                  )}
+                </PokemonCard>
               );
             })}
           </div>
@@ -444,12 +477,17 @@ function UserPage({
           <div>loading...</div>
         ) : (
           pokemons.map((p) => {
-            const userOwnedPokemons = getUserOwnedPokemon(p.id);
+            const preferredFormIndex =
+              user.preferredForms && user.preferredForms[p.id];
+            const userOwnedPokemons = getUserOwnedPokemon(p.id)?.sort(
+              (a, b) => a.formIndex - b.formIndex
+            );
+            const preferredOwnedPokemon = userOwnedPokemons?.find(
+              ({ formIndex }) => formIndex === preferredFormIndex
+            );
             const userOwnedPokemon =
-              userOwnedPokemons &&
-              (userOwnedPokemons.find((p) => p.isShiny)
-                ? userOwnedPokemons.find((p) => p.isShiny)
-                : userOwnedPokemons[0]);
+              preferredOwnedPokemon ??
+              (userOwnedPokemons && userOwnedPokemons[0]);
             return (
               <PokemonCard
                 key={p.id}

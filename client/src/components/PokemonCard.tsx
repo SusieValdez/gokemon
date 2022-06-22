@@ -25,12 +25,14 @@ const pokemonTypeColors: Record<string, string> = {
 type PokemonCardProps = {
   pokemon: OwnedPokemon;
   onClick?: () => void;
+  className?: string;
   imgClassName?: string;
 };
 
 const PokemonCard: React.FC<PokemonCardProps> = ({
   pokemon,
   onClick,
+  className,
   imgClassName,
   children,
 }) => {
@@ -42,7 +44,9 @@ const PokemonCard: React.FC<PokemonCardProps> = ({
   const form = forms[formIndex];
   return (
     <div
-      className={`w-full text-black rounded-lg flex flex-col py-2 px-4 cursor-pointer outline hover:outline-2 outline-0 outline-black`}
+      className={`${
+        className ?? ""
+      } w-full text-black rounded-lg flex flex-col py-2 px-4 cursor-pointer outline hover:outline-2 outline-0 outline-black justify-between`}
       style={{
         background:
           form.types.length === 2
@@ -58,14 +62,18 @@ const PokemonCard: React.FC<PokemonCardProps> = ({
         {isShiny && "Shiny "}
         {form.name}
       </h2>
-      <div>
-        <img
-          className={`[image-rendering:pixelated] w-full ${imgClassName ?? ""}`}
-          src={spriteUrl(pokemon)}
-        />
+      <div className="flex flex-col">
+        <div>
+          <img
+            className={`[image-rendering:pixelated] w-full ${
+              imgClassName ?? ""
+            }`}
+            src={spriteUrl(pokemon)}
+          />
+        </div>
+        {children}
+        <span className="text-center text-sm font-bold">{id}</span>
       </div>
-      {children}
-      <span className="text-center text-sm font-bold">{id}</span>
     </div>
   );
 };

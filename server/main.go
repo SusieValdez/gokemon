@@ -90,7 +90,7 @@ func main() {
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{clientBaseURL},
-		AllowMethods:     []string{"GET", "POST", "DELETE"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowCredentials: true,
 	}))
 	r.GET("/api/v1/pokemon", s.GetPokemons)
@@ -101,6 +101,7 @@ func main() {
 
 	r.GET("/api/v1/user/", s.GetUser)
 	r.GET("/api/v1/user/:username", s.GetUser)
+	r.PUT("/api/v1/user/preferredForm", s.UpdatePreferredForm)
 
 	r.POST("api/v1/friendships", s.PostFriendship)
 	r.DELETE("api/v1/friendships", s.DeleteFriendship)
