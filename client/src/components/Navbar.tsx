@@ -31,6 +31,7 @@ type NavbarProps = {
   selectModalButton: React.RefObject<HTMLSpanElement>;
   selectModalOpen: boolean;
   setSelectModalOpen: (open: boolean) => void;
+  getUserData: () => void;
 };
 
 type MenuType = "user" | "friends" | "notifications" | "trade-requests";
@@ -43,6 +44,7 @@ const Navbar = ({
   selectModalButton,
   selectModalOpen,
   setSelectModalOpen,
+  getUserData,
 }: NavbarProps) => {
   const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
   const userMenu = useRef<HTMLDivElement>(null);
@@ -71,19 +73,19 @@ const Navbar = ({
   }, [location]);
 
   const onClickAcceptFriendRequest = async (id: number) => {
-    postFriendship(id).then(() => window.location.reload());
+    postFriendship(id).then(() => getUserData());
   };
 
   const onClickDenyFriendRequest = (id: number) => {
-    deleteFriendRequest(id).then(() => window.location.reload());
+    deleteFriendRequest(id).then(() => getUserData());
   };
 
   const onClickAcceptTradeRequest = async (id: number) => {
-    acceptTrade(id).then(() => window.location.reload());
+    acceptTrade(id).then(() => getUserData());
   };
 
   const onClickDenyTradeRequest = (id: number) => {
-    deleteTradeRequest(id).then(() => window.location.reload());
+    deleteTradeRequest(id).then(() => getUserData());
   };
 
   return (

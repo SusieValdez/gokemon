@@ -46,6 +46,9 @@ function App() {
 
   const userId: string | undefined = location.pathname.slice(1);
 
+  const getUserData = () =>
+    getUser(userId).then((userSession) => setUserSession(userSession));
+
   useEffect(() => {
     getUser(userId).then((userSession) => {
       if (userSession?.loggedInUser && !userSession.user) {
@@ -197,6 +200,7 @@ function App() {
             selectModalButton={selectModalButton}
             selectModalOpen={selectModalOpen}
             setSelectModalOpen={setSelectModalOpen}
+            getUserData={getUserData}
           />
           <div className="p-4 mx-auto pt-20">
             <Routes>
@@ -211,6 +215,7 @@ function App() {
                       loggedInUserOwnsPokemon={loggedInUserOwnsPokemon}
                       userOwnsPokemon={userOwnsPokemon}
                       getUserOwnedPokemon={getUserOwnedPokemon}
+                      getUserData={getUserData}
                     />
                   ) : (
                     <HomePage />

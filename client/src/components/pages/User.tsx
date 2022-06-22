@@ -22,6 +22,7 @@ type UserProps = {
   loggedInUserOwnsPokemon: (p: Pokemon) => boolean;
   userOwnsPokemon: (p: Pokemon, formIndex?: number) => boolean;
   getUserOwnedPokemon: (id: number) => OwnedPokemon[] | undefined;
+  getUserData: () => void;
 };
 
 type PokemonFilter = "all" | "owned" | "unowned";
@@ -69,6 +70,7 @@ function UserPage({
   loggedInUserOwnsPokemon,
   userOwnsPokemon,
   getUserOwnedPokemon,
+  getUserData,
 }: UserProps) {
   const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
 
@@ -114,24 +116,25 @@ function UserPage({
   }, []);
 
   const onClickSendFriendRequest = () => {
-    postFriendRequest(user.id).then(() => window.location.reload());
+    postFriendRequest(user.id).then(() => getUserData());
   };
 
   const onClickCancelFriendRequest = (id: number) => {
-    deleteFriendRequest(id).then(() => window.location.reload());
+    deleteFriendRequest(id).then(() => getUserData());
   };
 
   const onClickRemoveFriend = (friendId: number) => {
-    deleteFriendship(friendId).then(() => window.location.reload());
+    deleteFriendship(friendId).then(() => getUserData());
   };
 
   const onClickSendTradeRequest = () => {
     if (!offeredPokemon || !wantedPokemon) {
       return;
     }
-    postTradeRequest(offeredPokemon.id, user.id, wantedPokemon.id).then(() =>
-      window.location.reload()
-    );
+    postTradeRequest(offeredPokemon.id, user.id, wantedPokemon.id).then(() => {
+      setWantedPokemon(undefined);
+      getUserData();
+    });
   };
 
   const canInteractWithUser = loggedInUser && user.id !== loggedInUser.id;
