@@ -92,13 +92,13 @@ const Navbar = ({
     <nav className="border-gray-200 px-2 sm:px-4 py-2.5 bg-gray-800 fixed w-full z-10">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
         <Link to="/" className="flex items-center">
-          <img src={Pokeball} className="mr-3 h-6 sm:h-9" alt="Logo" />
-          <span className="self-center text-xl font-semibold whitespace-nowrap text-white">
+          <img src={Pokeball} className="ml-3 h-9 md:h-6" alt="Logo" />
+          <span className="hidden md:inline-block self-center text-xl font-semibold whitespace-nowrap text-white">
             Gokemon
           </span>
         </Link>
         {secondsRemainingUntilNewPokemon !== undefined && (
-          <span className="mt-1">
+          <span className="text-xl">
             {secondsRemainingUntilNewPokemon >= 0 &&
               convertSeconds(secondsRemainingUntilNewPokemon)}
           </span>
@@ -320,7 +320,7 @@ const Navbar = ({
                         tradesMenuRect.x -
                         (tradeRequests.received.length > 0 ||
                         tradeRequests.sent.length > 0
-                          ? 250
+                          ? 242
                           : 30)
                       }px, ${
                         tradesMenuRect.y + tradesMenuRect.height + 20
@@ -438,7 +438,7 @@ const Navbar = ({
               <span ref={userMenu} className="mr-2">
                 <button
                   type="button"
-                  className="flex mr-3 text-sm rounded-full md:mr-0 outline-none"
+                  className="flex mr-5 text-sm rounded-full md:mr-0 outline-none"
                   aria-expanded={openMenu === "user"}
                   data-dropdown-toggle="dropdown"
                   onClick={() =>
