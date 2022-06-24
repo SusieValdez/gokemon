@@ -10,9 +10,12 @@ import (
 	"susie.mx/gokemon/models"
 )
 
-const NewPokemonInterval = 25 * time.Minute
+const NumMinutesBetweenNewPokemon = 25
 const NumPendingPokemon = 3
-const ShinyRate = 1.0 / 100.0
+const AverageEncounterRatePerMinuteInGames = 2
+const ShinyRateInGames = 1 / 8192.0
+const ShinyRate = NumMinutesBetweenNewPokemon * AverageEncounterRatePerMinuteInGames * ShinyRateInGames / NumPendingPokemon
+const NewPokemonInterval = NumMinutesBetweenNewPokemon * time.Minute
 
 func (s *Server) GetPokemons(c *gin.Context) {
 	var pokemon []models.Pokemon
