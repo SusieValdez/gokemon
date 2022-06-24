@@ -4,7 +4,7 @@ import NotificationIcon from "../assets/bell-solid.svg";
 import FriendListIcon from "../assets/user-group-solid.svg";
 import TradeRequestIcon from "../assets/retweet-solid.svg";
 import PokeballIcon from "../assets/pokeball.svg";
-import { TradeRequest, User } from "../models";
+import { TradeRequest, User, OwnedPokemon } from "../models";
 import { useEffect, useRef, useState } from "react";
 import { useElementClientRect } from "../hooks/useElementClientRect";
 import { useOnClickOutsideElements } from "../hooks/useOnClickOutsideElement";
@@ -13,6 +13,8 @@ import { acceptTrade, postFriendship } from "../api/users";
 import { deleteTradeRequest } from "../api/tradeRequests";
 import { Link, useLocation } from "react-router-dom";
 import { spriteUrl } from "../api/pokemon";
+import PokemonCard from "./PokemonCard";
+import { notOwnedText, OwnershipStatus } from "../App";
 
 function convertSeconds(s: number): string {
   var min = Math.floor(s / 60);
@@ -32,6 +34,7 @@ type NavbarProps = {
   selectModalOpen: boolean;
   setSelectModalOpen: (open: boolean) => void;
   getUserData: () => void;
+  loggedInUserPokemonOwnershipStatus: (p: OwnedPokemon) => OwnershipStatus;
 };
 
 type MenuType = "user" | "friends" | "notifications" | "trade-requests";
@@ -45,6 +48,7 @@ const Navbar = ({
   selectModalOpen,
   setSelectModalOpen,
   getUserData,
+  loggedInUserPokemonOwnershipStatus,
 }: NavbarProps) => {
   const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
   const userMenu = useRef<HTMLDivElement>(null);
@@ -337,39 +341,67 @@ const Navbar = ({
                       {tradeRequests.sent.length > 0 ? (
                         <ul className="py-1" aria-labelledby="dropdown">
                           {tradeRequests.sent.map(
-                            ({ id, friend, userPokemon, friendPokemon }) => (
-                              <li
-                                key={id}
-                                className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
-                              >
-                                <p>
-                                  <img
-                                    src={friend.profilePictureUrl}
-                                    className="w-8 h-8 inline mr-2 rounded-full"
-                                  />
-                                  You want to trade with {friend.username}!
-                                </p>
+                            ({ id, friend, userPokemon, friendPokemon }) => {
+                              const ownershipStatus =
+                                loggedInUserPokemonOwnershipStatus(
+                                  friendPokemon
+                                );
+                              return (
+                                <li
+                                  key={id}
+                                  className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
+                                >
+                                  <p>
+                                    <img
+                                      src={friend.profilePictureUrl}
+                                      className="w-8 h-8 inline mr-2 rounded-full"
+                                    />
+                                    You want to trade with {friend.username}!
+                                  </p>
 
-                                <div className="flex items-center">
                                   <div className="flex items-center">
-                                    Their
-                                    <img src={spriteUrl(friendPokemon)} />
-                                    for your
-                                    <img src={spriteUrl(userPokemon)} />
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        Their
+                                        <PokemonCard
+                                          key={friendPokemon.id}
+                                          pokemon={friendPokemon}
+                                          className="relative w-full"
+                                          imgClassName={`${
+                                            ownershipStatus === "owned" &&
+                                            "grayscale"
+                                          }`}
+                                        >
+                                          {ownershipStatus !== "owned" && (
+                                            <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
+                                              {notOwnedText[ownershipStatus]}
+                                            </span>
+                                          )}
+                                        </PokemonCard>
+                                      </div>
+                                      <div>
+                                        for your
+                                        <PokemonCard
+                                          key={userPokemon.id}
+                                          pokemon={userPokemon}
+                                          className="relative w-full"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <button
+                                        className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                        onClick={() =>
+                                          onClickDenyTradeRequest(id)
+                                        }
+                                      >
+                                        ❌
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <button
-                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
-                                      onClick={() =>
-                                        onClickDenyTradeRequest(id)
-                                      }
-                                    >
-                                      ❌
-                                    </button>
-                                  </div>
-                                </div>
-                              </li>
-                            )
+                                </li>
+                              );
+                            }
                           )}
                         </ul>
                       ) : (
@@ -383,47 +415,73 @@ const Navbar = ({
                       {tradeRequests.received.length > 0 ? (
                         <ul className="py-1" aria-labelledby="dropdown">
                           {tradeRequests.received.map(
-                            ({ id, user, userPokemon, friendPokemon }) => (
-                              <li
-                                key={id}
-                                className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
-                              >
-                                <p>
-                                  <img
-                                    src={user.profilePictureUrl}
-                                    className="w-8 h-8 inline mr-2 rounded-full"
-                                  />
-                                  {user.username} wants to trade with you!
-                                </p>
+                            ({ id, user, userPokemon, friendPokemon }) => {
+                              const ownershipStatus =
+                                loggedInUserPokemonOwnershipStatus(userPokemon);
+                              return (
+                                <li
+                                  key={id}
+                                  className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
+                                >
+                                  <p>
+                                    <img
+                                      src={user.profilePictureUrl}
+                                      className="w-8 h-8 inline mr-2 rounded-full"
+                                    />
+                                    {user.username} wants to trade with you!
+                                  </p>
 
-                                <div className="flex items-center">
                                   <div className="flex items-center">
-                                    Their
-                                    <img src={spriteUrl(userPokemon)} />
-                                    for your
-                                    <img src={spriteUrl(friendPokemon)} />
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        Their
+                                        <PokemonCard
+                                          key={userPokemon.id}
+                                          pokemon={userPokemon}
+                                          className="relative w-full"
+                                          imgClassName={`${
+                                            ownershipStatus === "owned" &&
+                                            "grayscale"
+                                          }`}
+                                        >
+                                          {ownershipStatus !== "owned" && (
+                                            <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
+                                              {notOwnedText[ownershipStatus]}
+                                            </span>
+                                          )}
+                                        </PokemonCard>
+                                      </div>
+                                      <div>
+                                        for your
+                                        <PokemonCard
+                                          key={friendPokemon.id}
+                                          pokemon={friendPokemon}
+                                          className="relative w-full"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <button
+                                        className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                        onClick={() =>
+                                          onClickAcceptTradeRequest(id)
+                                        }
+                                      >
+                                        ✅
+                                      </button>
+                                      <button
+                                        className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                        onClick={() =>
+                                          onClickDenyTradeRequest(id)
+                                        }
+                                      >
+                                        ❌
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <button
-                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
-                                      onClick={() =>
-                                        onClickAcceptTradeRequest(id)
-                                      }
-                                    >
-                                      ✅
-                                    </button>
-                                    <button
-                                      className="px-2 hover:brightness-75 hover:-translate-y-1"
-                                      onClick={() =>
-                                        onClickDenyTradeRequest(id)
-                                      }
-                                    >
-                                      ❌
-                                    </button>
-                                  </div>
-                                </div>
-                              </li>
-                            )
+                                </li>
+                              );
+                            }
                           )}
                         </ul>
                       ) : (
