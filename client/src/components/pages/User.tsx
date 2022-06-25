@@ -15,6 +15,7 @@ import {
 import { FriendRequest, OwnedPokemon, Pokemon, User } from "../../models";
 import PokemonCard from "../PokemonCard";
 import EyeIcon from "../../assets/eye-solid.svg";
+import { matchesQuery } from "../../utils";
 
 type UserProps = {
   loggedInUser: User | null;
@@ -35,7 +36,8 @@ const filteredPokemon = (
   loggedInUserPokemonFilter: PokemonFilter,
   loggedInUserOwnsPokemon: (p: Pokemon) => boolean,
   userPokemonFilter: PokemonFilter,
-  userOwnsPokemon: (p: Pokemon) => boolean
+  userOwnsPokemon: (p: Pokemon) => boolean,
+  searchPokemonQuery: string
 ): Pokemon[] => {
   let pokemon = allPokemon;
   if (!loggedInUser || loggedInUser.id === user.id) {
@@ -61,6 +63,9 @@ const filteredPokemon = (
       pokemon = pokemon.filter((p) => !userOwnsPokemon(p));
       break;
   }
+  pokemon = pokemon.filter((p) =>
+    matchesQuery(`${p.name}${p.id}`, searchPokemonQuery)
+  );
   return pokemon;
 };
 
@@ -89,6 +94,8 @@ function UserPage({
     OwnedPokemon | undefined
   >();
 
+  const [searchPokemonQuery, setSearchPokemonQuery] = useState("");
+
   const pokemons = filteredPokemon(
     loggedInUser,
     user,
@@ -96,7 +103,8 @@ function UserPage({
     loggedInUserPokemonFilter,
     loggedInUserOwnsPokemon,
     userPokemonFilter,
-    userOwnsPokemon
+    userOwnsPokemon,
+    searchPokemonQuery
   );
 
   const tradeModal = useRef<HTMLDivElement>(null);
@@ -196,6 +204,21 @@ function UserPage({
               Send friend request
             </button>
           ))}
+      </div>
+
+      <div>
+        <label className="text-lg mr-3 font-semibold">
+          Search Pokemon Name:
+        </label>
+        <input
+          type="text"
+          name="pokemon-name"
+          placeholder="Pokemon Name"
+          onChange={(e) => {
+            setSearchPokemonQuery(e.target.value);
+          }}
+          className="shadow mb-3 appearance-none border rounded w-full md:w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        />
       </div>
 
       <div className="w-96">

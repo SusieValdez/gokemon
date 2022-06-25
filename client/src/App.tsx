@@ -16,6 +16,87 @@ import {
   TradeRequest,
   User,
 } from "./models";
+import produce from "immer";
+
+export type UserOwnedPokemon = Record<
+  number,
+  { shiny: OwnedPokemon[]; regular: OwnedPokemon[] }
+>;
+
+export type OwnedPokemonMap = Record<number, UserOwnedPokemon>;
+
+const toOwnedPokemonMap = (ownedPokemon: OwnedPokemon[]) =>
+  ownedPokemon.reduce(
+    (acc, p) =>
+      produce(acc, (draft) => {
+        const shininessIndex = p.isShiny ? "shiny" : "regular";
+        const species = draft[p.pokemon.id];
+        if (species) {
+          const form = species[p.formIndex];
+          if (form) {
+            const ownedPokemon = form[shininessIndex];
+            if (ownedPokemon) {
+              ownedPokemon.push(p);
+            } else {
+              draft[p.pokemon.id][p.formIndex][shininessIndex] = [p];
+            }
+          } else {
+            draft[p.pokemon.id][p.formIndex] = {
+              shiny: [],
+              regular: [],
+              [shininessIndex]: [p],
+            };
+          }
+        } else {
+          draft[p.pokemon.id] = {
+            [p.formIndex]: {
+              shiny: [],
+              regular: [],
+              [shininessIndex]: [p],
+            },
+          };
+        }
+      }),
+    {} as OwnedPokemonMap
+  );
+
+export type OwnershipStatus =
+  | "owned"
+  | "dont-own-species"
+  | "dont-own-form"
+  | "dont-own-shiny"
+  | "dont-own-regular";
+
+export const notOwnedText: Record<Exclude<OwnershipStatus, "owned">, string> = {
+  "dont-own-species": "NEW!",
+  "dont-own-form": "NEW FORM!",
+  "dont-own-shiny": "NEW SHINY!",
+  "dont-own-regular": "NEW REGULAR!",
+};
+
+const ownedPokemonStatus = (
+  p: OwnedPokemon,
+  ownedPokemonMap: OwnedPokemonMap
+): OwnershipStatus => {
+  const species = ownedPokemonMap[p.pokemon.id];
+  if (!species) {
+    return "dont-own-species";
+  }
+  const form = species[p.formIndex];
+  if (!form) {
+    return "dont-own-form";
+  }
+  if (p.isShiny) {
+    if (form.shiny.length === 0) {
+      return "dont-own-shiny";
+    }
+  } else {
+    if (form.regular.length === 0) {
+      return "dont-own-regular";
+    }
+  }
+  return "owned";
+};
 
 function App() {
   const [userSession, setUserSession_] = useState<UserSession>();
@@ -154,39 +235,43 @@ function App() {
     });
   };
 
-  const loggedInUserOwnedPokemonMap = (
+  const loggedInUserOwnedPokemonMap = toOwnedPokemonMap(
     userSession?.loggedInUser?.ownedPokemon ?? []
-  ).reduce(
-    (acc, p) => ({
-      ...acc,
-      [p.pokemon.id]: acc[p.pokemon.id] ? [...acc[p.pokemon.id], p] : [p],
-    }),
-    {} as Record<number, OwnedPokemon[]>
   );
+  const loggedInUserPokemonOwnershipStatus = (
+    p: OwnedPokemon
+  ): OwnershipStatus => {
+    return ownedPokemonStatus(p, loggedInUserOwnedPokemonMap);
+  };
   const loggedInUserOwnsPokemon = (p: Pokemon): boolean =>
     loggedInUserOwnedPokemonMap[p.id] !== undefined;
 
-  const userOwnedPokemonMap = (userSession?.user?.ownedPokemon ?? []).reduce(
+  const userOwnedPokemonMap = toOwnedPokemonMap(
+    userSession?.user?.ownedPokemon ?? []
+  );
+  const userOwnsPokemon = (p: Pokemon, formIndex?: number): boolean => {
+    const species = userOwnedPokemonMap[p.id];
+    if (!species) {
+      return false;
+    }
+    if (formIndex !== undefined) {
+      const form = species[formIndex];
+      if (!form) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const userOwnedPokemons = (userSession?.user?.ownedPokemon ?? []).reduce(
     (acc, p) => ({
       ...acc,
       [p.pokemon.id]: acc[p.pokemon.id] ? [...acc[p.pokemon.id], p] : [p],
     }),
     {} as Record<number, OwnedPokemon[]>
   );
-  const userOwnsPokemon = (p: Pokemon, formIndex?: number): boolean => {
-    if (!userOwnedPokemonMap[p.id]) {
-      return false;
-    }
-    if (formIndex !== undefined) {
-      return (
-        userOwnedPokemonMap[p.id].find((p) => p.formIndex === formIndex) !=
-        undefined
-      );
-    }
-    return userOwnedPokemonMap[p.id].length > 0;
-  };
   const getUserOwnedPokemon = (id: number): OwnedPokemon[] | undefined =>
-    userOwnedPokemonMap[id];
+    userOwnedPokemons[id];
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 text-white">
@@ -201,6 +286,9 @@ function App() {
             selectModalOpen={selectModalOpen}
             setSelectModalOpen={setSelectModalOpen}
             getUserData={getUserData}
+            loggedInUserPokemonOwnershipStatus={
+              loggedInUserPokemonOwnershipStatus
+            }
           />
           <div className="p-4 mx-auto pt-20">
             <Routes>
@@ -243,23 +331,27 @@ function App() {
                   </span>
                 </div>
                 <div className="gap-2 grid grid-cols-3">
-                  {userSession.loggedInUser.pendingPokemon.map((p, i) => (
-                    <PokemonCard
-                      key={p.id}
-                      pokemon={p}
-                      onClick={() => onClickPendingPokemon(i)}
-                      className="relative w-full"
-                      imgClassName={`${
-                        loggedInUserOwnsPokemon(p.pokemon) && "grayscale"
-                      }`}
-                    >
-                      {!loggedInUserOwnsPokemon(p.pokemon) && (
-                        <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
-                          NEW!
-                        </span>
-                      )}
-                    </PokemonCard>
-                  ))}
+                  {userSession.loggedInUser.pendingPokemon.map((p, i) => {
+                    const ownershipStatus =
+                      loggedInUserPokemonOwnershipStatus(p);
+                    return (
+                      <PokemonCard
+                        key={p.id}
+                        pokemon={p}
+                        onClick={() => onClickPendingPokemon(i)}
+                        className="relative w-full"
+                        imgClassName={`${
+                          ownershipStatus === "owned" && "grayscale"
+                        }`}
+                      >
+                        {ownershipStatus !== "owned" && (
+                          <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
+                            {notOwnedText[ownershipStatus]}
+                          </span>
+                        )}
+                      </PokemonCard>
+                    );
+                  })}
                 </div>
               </div>
             )}
