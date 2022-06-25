@@ -41,7 +41,8 @@ func (c *Client) GetAccessToken(code string) AccessTokenResponse {
 		log.Fatalf("reading response bytes failed: %s", err)
 	}
 	if resp.StatusCode != 200 {
-		log.Fatalf("requesting access token failed: %s", string(bs))
+		log.Printf("requesting access token failed: %s", string(bs))
+		return AccessTokenResponse{}
 	}
 	var response AccessTokenResponse
 	err = json.Unmarshal(bs, &response)
