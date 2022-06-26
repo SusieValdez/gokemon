@@ -54,23 +54,17 @@ const Navbar = ({
   const userMenu = useRef<HTMLDivElement>(null);
   const userMenuRect = useElementClientRect(userMenu);
 
-  const notificationsMenu = useRef<HTMLDivElement>(null);
-  const notificationsMenuRect = useElementClientRect(notificationsMenu);
-
   const tradesMenu = useRef<HTMLDivElement>(null);
-  const tradesMenuRect = useElementClientRect(notificationsMenu);
+  const tradesMenuRect = useElementClientRect(tradesMenu);
 
   const friendsMenu = useRef<HTMLDivElement>(null);
   const friendsMenuRect = useElementClientRect(friendsMenu);
 
   const location = useLocation();
 
-  useOnClickOutsideElements(
-    [userMenu, notificationsMenu, friendsMenu, tradesMenu],
-    () => {
-      setOpenMenu(undefined);
-    }
-  );
+  useOnClickOutsideElements([userMenu, friendsMenu, tradesMenu], () => {
+    setOpenMenu(undefined);
+  });
 
   useEffect(() => {
     setOpenMenu(undefined);
@@ -137,6 +131,9 @@ const Navbar = ({
                 </button>
               </span>
               <span ref={friendsMenu} className="">
+                {friendRequests.received.length > 0 && (
+                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-red-500"></div>
+                )}
                 <button
                   type="button"
                   className={`flex mr-5 text-sm outline-none ${
@@ -169,6 +166,41 @@ const Navbar = ({
                       }px, 0px)`,
                     }}
                   >
+                    {friendRequests.received.length > 0 && (
+                      <>
+                        <div className="py-3 px-4">
+                          <span className="block text-sm text-white">
+                            Friend Requests
+                          </span>
+                        </div>
+                        <ul className="py-1" aria-labelledby="dropdown">
+                          {friendRequests.received.map(({ id, user }) => (
+                            <li
+                              key={id}
+                              className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
+                            >
+                              <img
+                                src={user.profilePictureUrl}
+                                className="w-8 h-8 inline mr-2 rounded-full"
+                              />
+                              {user.username} added you!
+                              <button
+                                className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                onClick={() => onClickAcceptFriendRequest(id)}
+                              >
+                                ✅
+                              </button>
+                              <button
+                                className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                onClick={() => onClickDenyFriendRequest(id)}
+                              >
+                                ❌
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
                     <div className="py-3 px-4">
                       <span className="block text-sm text-white">Friends</span>
                     </div>
@@ -194,90 +226,6 @@ const Navbar = ({
                     ) : (
                       <div className="py-2 px-4 w-44 text-center text-sm">
                         This is awkward but... you have no friends 😅
-                      </div>
-                    )}
-                  </div>
-                )}
-              </span>
-              <span ref={notificationsMenu} className="">
-                {friendRequests.received.length > 0 && (
-                  <div className="w-2 h-2 animate-ping absolute inline-flex rounded-full bg-red-500"></div>
-                )}
-                <button
-                  type="button"
-                  className={`flex mr-5 text-sm outline-none ${
-                    openMenu === "notifications"
-                      ? "brightness-75"
-                      : "brightness-100"
-                  }`}
-                  aria-expanded={openMenu === "notifications"}
-                  data-dropdown-toggle="dropdown"
-                  onClick={() =>
-                    setOpenMenu(
-                      openMenu === "notifications" ? undefined : "notifications"
-                    )
-                  }
-                >
-                  <span className="sr-only">Open notifications menu</span>
-                  <img
-                    className="w-6 h-6 md:w-8 md:h-8"
-                    style={{ filter: "invert(100%)" }}
-                    src={NotificationIcon}
-                    alt="notification icon"
-                  />
-                </button>
-
-                {openMenu === "notifications" && (
-                  <div
-                    className="max-h-[500px] overflow-y-auto z-50 my-4 text-base list-none rounded divide-y shadow bg-gray-700 divide-gray-600"
-                    style={{
-                      position: "absolute",
-                      inset: "0px auto auto 0px",
-                      margin: "0px",
-                      transform: `translate3d(${
-                        notificationsMenuRect.x - 120
-                      }px, ${
-                        notificationsMenuRect.y +
-                        notificationsMenuRect.height +
-                        20
-                      }px, 0px)`,
-                    }}
-                  >
-                    <div className="py-3 px-4">
-                      <span className="block text-sm text-white">
-                        Notifications
-                      </span>
-                    </div>
-                    {friendRequests.received.length > 0 ? (
-                      <ul className="py-1" aria-labelledby="dropdown">
-                        {friendRequests.received.map(({ id, user }) => (
-                          <li
-                            key={id}
-                            className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
-                          >
-                            <img
-                              src={user.profilePictureUrl}
-                              className="w-8 h-8 inline mr-2 rounded-full"
-                            />
-                            {user.username} added you!
-                            <button
-                              className="px-2 hover:brightness-75 hover:-translate-y-1"
-                              onClick={() => onClickAcceptFriendRequest(id)}
-                            >
-                              ✅
-                            </button>
-                            <button
-                              className="px-2 hover:brightness-75 hover:-translate-y-1"
-                              onClick={() => onClickDenyFriendRequest(id)}
-                            >
-                              ❌
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="py-2 px-4 w-44 text-center text-sm">
-                        You have no new notifications...
                       </div>
                     )}
                   </div>
