@@ -272,7 +272,7 @@ function UserPage({
             src={user.profilePictureUrl}
             className="w-16 h-16 rounded-full inline-block"
           />
-          <h2 className="text-lg font-semibold whitespace-nowrap md:text-3xl flex flex-col">
+          <h2 className="text-lg font-semibold md:text-3xl flex flex-col">
             {user.username}'s Pokemon
             <span className="text-sm font-light">
               ({user.ownedPokemon.length} / {allPokemon.length}){" "}
@@ -282,14 +282,14 @@ function UserPage({
         {canInteractWithUser &&
           (friend ? (
             <button
-              className="w-fit h-fit text-xs bg-red-500 p-3 rounded-md md:text-lg hover:bg-red-600 active:brightness-90 md:w-fit"
+              className="w-fit h-fit text-xs bg-red-500 p-2 sm:p-3 rounded-md md:text-lg hover:bg-red-600 active:brightness-90 md:w-fit"
               onClick={() => onClickRemoveFriend(friend.id)}
             >
               Remove Friend
             </button>
           ) : friendRequestFromLoggedInUser ? (
             <button
-              className="w-fit h-fit text-xs bg-red-500 p-3 rounded-md md:text-lg hover:bg-red-600 active:brightness-90 md:w-fit"
+              className="w-fit h-fit text-xs bg-red-500 p-2 sm:p-3 rounded-md md:text-lg hover:bg-red-600 active:brightness-90 md:w-fit"
               onClick={() =>
                 onClickCancelFriendRequest(friendRequestFromLoggedInUser.id)
               }
@@ -298,7 +298,7 @@ function UserPage({
             </button>
           ) : (
             <button
-              className="w-fit h-fit text-xs bg-blurple p-3 rounded-md md:text-lg hover:bg-dark-blurple active:brightness-90 md:w-fit"
+              className="w-fit h-fit text-xs bg-blurple p-2 sm:p-3 rounded-md md:text-lg hover:bg-dark-blurple active:brightness-90 md:w-fit"
               onClick={onClickSendFriendRequest}
             >
               Send friend request
