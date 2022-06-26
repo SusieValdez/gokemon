@@ -139,11 +139,12 @@ func (s *Server) UpdatePreferredForm(c *gin.Context) {
 	c.BindJSON(&request)
 	session := sessions.Default(c)
 	loggedInUsername := session.Get("username")
-	s.DB.
-		Model(&models.User{}).
-		Where("username = ?", loggedInUsername).
-		Update("PreferredForms", dbtypes.JSON{
-			fmt.Sprint(request.PokemonID): request.FormIndex,
-		})
+	var user models.User
+	s.DB.Preload("PreferredForms").First(&user, "username = ?", loggedInUsername)
+	if user.PreferredForms == nil {
+		user.PreferredForms = dbtypes.JSON{}
+	}
+	user.PreferredForms[fmt.Sprint(request.PokemonID)] = request.FormIndex
+	s.DB.Save(&user)
 	c.JSON(http.StatusOK, "ok")
 }
