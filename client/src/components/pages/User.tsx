@@ -27,17 +27,24 @@ type UserProps = {
   getUserData: () => void;
 };
 
-type PokemonFilter = "all" | "owned" | "unowned";
+type OwnedPokemonFilter = "all" | "owned" | "unowned";
+type ShinyPokemonFilter = "all" | "regular" | "shiny";
+type PokemonFormFilter = "all" | "default" | "non-default";
+type LegendaryPokemonFilter = "all" | "regular" | "legendary" | "mythical";
 
 const filteredPokemon = (
   loggedInUser: User | null,
   user: User,
   allPokemon: Pokemon[],
-  loggedInUserPokemonFilter: PokemonFilter,
+  loggedInUserPokemonFilter: OwnedPokemonFilter,
   loggedInUserOwnsPokemon: (p: Pokemon) => boolean,
-  userPokemonFilter: PokemonFilter,
+  userPokemonFilter: OwnedPokemonFilter,
   userOwnsPokemon: (p: Pokemon) => boolean,
-  searchPokemonQuery: string
+  searchPokemonQuery: string,
+  getUserOwnedPokemon: (id: number) => OwnedPokemon[] | undefined,
+  shinyPokemonFilter: ShinyPokemonFilter,
+  pokemonFormFilter: PokemonFormFilter,
+  legendaryPokemonFilter: LegendaryPokemonFilter
 ): Pokemon[] => {
   let pokemon = allPokemon;
   if (!loggedInUser || loggedInUser.id === user.id) {
@@ -63,6 +70,83 @@ const filteredPokemon = (
       pokemon = pokemon.filter((p) => !userOwnsPokemon(p));
       break;
   }
+  switch (shinyPokemonFilter) {
+    case "all":
+      break;
+    case "regular":
+      pokemon = pokemon.filter((p) => {
+        const ownedPokemon = getUserOwnedPokemon(p.id);
+        if (!ownedPokemon) {
+          return false;
+        }
+        for (const op of ownedPokemon) {
+          if (!op.isShiny) {
+            return true;
+          }
+        }
+        return false;
+      });
+      break;
+    case "shiny":
+      pokemon = pokemon.filter((p) => {
+        const ownedPokemon = getUserOwnedPokemon(p.id);
+        if (!ownedPokemon) {
+          return false;
+        }
+        for (const op of ownedPokemon) {
+          if (op.isShiny) {
+            return true;
+          }
+        }
+        return false;
+      });
+      break;
+  }
+  switch (pokemonFormFilter) {
+    case "all":
+      break;
+    case "default":
+      pokemon = pokemon.filter((p) => {
+        const ownedPokemon = getUserOwnedPokemon(p.id);
+        if (!ownedPokemon) {
+          return false;
+        }
+        for (const op of ownedPokemon) {
+          if (op.formIndex === 0) {
+            return true;
+          }
+        }
+        return false;
+      });
+      break;
+    case "non-default":
+      pokemon = pokemon.filter((p) => {
+        const ownedPokemon = getUserOwnedPokemon(p.id);
+        if (!ownedPokemon) {
+          return false;
+        }
+        for (const op of ownedPokemon) {
+          if (op.formIndex > 0) {
+            return true;
+          }
+        }
+        return false;
+      });
+      break;
+  }
+  switch (legendaryPokemonFilter) {
+    case "all":
+      break;
+    case "legendary":
+      pokemon = pokemon.filter((p) => p.isLegendary);
+      break;
+    case "mythical":
+      pokemon = pokemon.filter((p) => p.isMythical);
+      break;
+    case "regular":
+      pokemon = pokemon.filter((p) => !p.isLegendary && !p.isMythical);
+      break;
+  }
   pokemon = pokemon.filter((p) =>
     matchesQuery(`${p.name}${p.id}`, searchPokemonQuery)
   );
@@ -81,9 +165,21 @@ function UserPage({
   const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
 
   const [userPokemonFilter, setUserPokemonFilter] =
-    useLocalStorageState<PokemonFilter>("userPokemonFilter", "owned");
+    useLocalStorageState<OwnedPokemonFilter>("userPokemonFilter", "owned");
   const [loggedInUserPokemonFilter, setLoggedInUserPokemonFilter] =
-    useLocalStorageState<PokemonFilter>("loggedInUserPokemonFilter", "all");
+    useLocalStorageState<OwnedPokemonFilter>(
+      "loggedInUserPokemonFilter",
+      "all"
+    );
+  const [shinyPokemonFilter, setShinyPokemonFilter] =
+    useLocalStorageState<ShinyPokemonFilter>("shinyPokemonFilter", "all");
+  const [pokemonFormFilter, setFormPokemonFilter] =
+    useLocalStorageState<PokemonFormFilter>("pokemonFormFilter", "all");
+  const [legendaryPokemonFilter, setLegendaryPokemonFilter] =
+    useLocalStorageState<LegendaryPokemonFilter>(
+      "legendaryPokemonFilter",
+      "all"
+    );
 
   const [selectedSpecies, setSelectedSpecies] = useState<Pokemon>();
 
@@ -104,7 +200,11 @@ function UserPage({
     loggedInUserOwnsPokemon,
     userPokemonFilter,
     userOwnsPokemon,
-    searchPokemonQuery
+    searchPokemonQuery,
+    getUserOwnedPokemon,
+    shinyPokemonFilter,
+    pokemonFormFilter,
+    legendaryPokemonFilter
   );
 
   const tradeModal = useRef<HTMLDivElement>(null);
@@ -221,44 +321,6 @@ function UserPage({
         />
       </div>
 
-      <div className="w-96">
-        <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
-          <p>{user.username}'s Filter</p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setUserPokemonFilter("all")}
-              className={`cursor-pointer rounded px-4 py-1 ${
-                userPokemonFilter === "all"
-                  ? "bg-emerald-500"
-                  : "bg-emerald-300"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setUserPokemonFilter("unowned")}
-              className={`cursor-pointer rounded px-4 py-1 ${
-                userPokemonFilter === "unowned"
-                  ? "bg-emerald-500"
-                  : "bg-emerald-300"
-              }`}
-            >
-              Unowned
-            </button>
-            <button
-              onClick={() => setUserPokemonFilter("owned")}
-              className={`cursor-pointer rounded px-4 py-1 ${
-                userPokemonFilter === "owned"
-                  ? "bg-emerald-500"
-                  : "bg-emerald-300"
-              }`}
-            >
-              Owned
-            </button>
-          </div>
-        </div>
-      </div>
-
       {loggedInUser && loggedInUser.id !== user.id && (
         <div className="w-96">
           <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
@@ -298,6 +360,168 @@ function UserPage({
           </div>
         </div>
       )}
+
+      <div className="w-96">
+        <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
+          <p>{user.username}'s Filter</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setUserPokemonFilter("all")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                userPokemonFilter === "all"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setUserPokemonFilter("unowned")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                userPokemonFilter === "unowned"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Unowned
+            </button>
+            <button
+              onClick={() => setUserPokemonFilter("owned")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                userPokemonFilter === "owned"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Owned
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-96">
+        <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
+          <p>Shiny Filter</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShinyPokemonFilter("all")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                shinyPokemonFilter === "all"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setShinyPokemonFilter("regular")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                shinyPokemonFilter === "regular"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Regular
+            </button>
+            <button
+              onClick={() => setShinyPokemonFilter("shiny")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                shinyPokemonFilter === "shiny"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Shiny
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-96">
+        <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
+          <p>Form Filter</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFormPokemonFilter("all")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                pokemonFormFilter === "all"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFormPokemonFilter("default")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                pokemonFormFilter === "default"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Default
+            </button>
+            <button
+              onClick={() => setFormPokemonFilter("non-default")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                pokemonFormFilter === "non-default"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Variations
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-96">
+        <div className="flex justify-between text-sm md:text-lg mb-4 items-center">
+          <p>Legendary Filter</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setLegendaryPokemonFilter("all")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                legendaryPokemonFilter === "all"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setLegendaryPokemonFilter("regular")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                legendaryPokemonFilter === "regular"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Regular
+            </button>
+            <button
+              onClick={() => setLegendaryPokemonFilter("legendary")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                legendaryPokemonFilter === "legendary"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Legendary
+            </button>
+            <button
+              onClick={() => setLegendaryPokemonFilter("mythical")}
+              className={`cursor-pointer rounded px-4 py-1 ${
+                legendaryPokemonFilter === "mythical"
+                  ? "bg-emerald-500"
+                  : "bg-emerald-300"
+              }`}
+            >
+              Mythical
+            </button>
+          </div>
+        </div>
+      </div>
 
       {loggedInUser && wantedPokemon && offeredPokemon && (
         <div
