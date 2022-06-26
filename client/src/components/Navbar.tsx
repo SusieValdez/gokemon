@@ -360,9 +360,12 @@ const Navbar = ({
                                   </p>
 
                                   <div className="flex items-center">
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div>
-                                        Their
+                                    <div className="flex flex-col">
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <span>Their</span>
+                                        <span>For your</span>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-2">
                                         <PokemonCard
                                           key={friendPokemon.id}
                                           pokemon={friendPokemon}
@@ -378,9 +381,6 @@ const Navbar = ({
                                             </span>
                                           )}
                                         </PokemonCard>
-                                      </div>
-                                      <div>
-                                        for your
                                         <PokemonCard
                                           key={userPokemon.id}
                                           pokemon={userPokemon}
@@ -388,9 +388,9 @@ const Navbar = ({
                                         />
                                       </div>
                                     </div>
-                                    <div>
+                                    <div className="flex flex-col gap-4">
                                       <button
-                                        className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                        className="px-2 hover:brightness-75 hover:-translate-y-1 text-2xl"
                                         onClick={() =>
                                           onClickDenyTradeRequest(id)
                                         }
@@ -432,9 +432,12 @@ const Navbar = ({
                                   </p>
 
                                   <div className="flex items-center">
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div>
-                                        Their
+                                    <div className="flex flex-col">
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <span>Their</span>
+                                        <span>For your</span>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-2">
                                         <PokemonCard
                                           key={userPokemon.id}
                                           pokemon={userPokemon}
@@ -450,9 +453,6 @@ const Navbar = ({
                                             </span>
                                           )}
                                         </PokemonCard>
-                                      </div>
-                                      <div>
-                                        for your
                                         <PokemonCard
                                           key={friendPokemon.id}
                                           pokemon={friendPokemon}
@@ -460,9 +460,9 @@ const Navbar = ({
                                         />
                                       </div>
                                     </div>
-                                    <div>
+                                    <div className="flex flex-col gap-4">
                                       <button
-                                        className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                        className="px-2 hover:brightness-75 hover:-translate-y-1 text-2xl"
                                         onClick={() =>
                                           onClickAcceptTradeRequest(id)
                                         }
@@ -470,7 +470,7 @@ const Navbar = ({
                                         ✅
                                       </button>
                                       <button
-                                        className="px-2 hover:brightness-75 hover:-translate-y-1"
+                                        className="px-2 hover:brightness-75 hover:-translate-y-1 text-2xl"
                                         onClick={() =>
                                           onClickDenyTradeRequest(id)
                                         }
