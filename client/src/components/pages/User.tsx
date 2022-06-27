@@ -666,53 +666,60 @@ function UserPage({
           </div>
           <div className="bg-white p-6 rounded-md grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 overflow-scroll max-h-[75vh]">
             {selectedSpecies.forms.map((form, i) => {
-              const userOwnedPokemons = getUserOwnedPokemon(selectedSpecies.id);
-              const userOwnedPokemon =
-                userOwnedPokemons &&
-                userOwnedPokemons.find(({ formIndex }) => formIndex === i);
+              const pokemonFormMultiples = getUserOwnedPokemon(
+                selectedSpecies.id
+              )?.filter(({ formIndex }) => formIndex === i);
               const preferredFormIndex =
                 user.preferredForms && user.preferredForms[selectedSpecies.id];
+              if (pokemonFormMultiples && pokemonFormMultiples.length > 0) {
+                return pokemonFormMultiples.map((o) => (
+                  <PokemonCard
+                    key={o.id}
+                    pokemon={o}
+                    onClick={() => {
+                      if (canInteractWithUser) {
+                        setWantedPokemon(o);
+                      }
+                    }}
+                    className="relative"
+                  >
+                    {loggedInUser?.id === user.id && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onClickUpdatePreferredFormButton(
+                            selectedSpecies.id,
+                            i
+                          )
+                        }
+                        className="hover:brightness-75"
+                      >
+                        <img
+                          className="w-6 h-6 mt-1 md:w-8 md:h-8"
+                          style={{
+                            filter:
+                              preferredFormIndex === i ? "" : "invert(100%)",
+                          }}
+                          src={EyeIcon}
+                          alt="trade request icon"
+                        />
+                      </button>
+                    )}
+                  </PokemonCard>
+                ));
+              }
               return (
                 <PokemonCard
                   key={form.id}
-                  pokemon={
-                    userOwnedPokemon ?? {
-                      id: 0,
-                      pokemon: selectedSpecies,
-                      formIndex: i,
-                      isShiny: false,
-                    }
-                  }
-                  onClick={() => {
-                    if (canInteractWithUser) {
-                      setWantedPokemon(userOwnedPokemon);
-                    }
+                  pokemon={{
+                    id: 0,
+                    pokemon: selectedSpecies,
+                    formIndex: i,
+                    isShiny: false,
                   }}
                   className="relative"
-                  imgClassName={`${
-                    !userOwnsPokemon(selectedSpecies, i) && "brightness-0"
-                  }`}
-                >
-                  {userOwnedPokemon && loggedInUser?.id === user.id && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onClickUpdatePreferredFormButton(selectedSpecies.id, i)
-                      }
-                      className="hover:brightness-75"
-                    >
-                      <img
-                        className="w-6 h-6 mt-1 md:w-8 md:h-8"
-                        style={{
-                          filter:
-                            preferredFormIndex === i ? "" : "invert(100%)",
-                        }}
-                        src={EyeIcon}
-                        alt="trade request icon"
-                      />
-                    </button>
-                  )}
-                </PokemonCard>
+                  imgClassName={"brightness-0"}
+                />
               );
             })}
           </div>
@@ -747,7 +754,7 @@ function UserPage({
                   }
                 }
                 onClick={() => {
-                  if (p.forms.length === 1) {
+                  if (userOwnedPokemons?.length === 1) {
                     if (canInteractWithUser) {
                       setWantedPokemon(userOwnedPokemon);
                     }
