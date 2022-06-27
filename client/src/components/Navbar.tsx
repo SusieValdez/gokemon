@@ -14,7 +14,12 @@ import { deleteTradeRequest } from "../api/tradeRequests";
 import { Link, useLocation } from "react-router-dom";
 import { spriteUrl } from "../api/pokemon";
 import PokemonCard from "./PokemonCard";
-import { notOwnedText, OwnershipStatus } from "../App";
+import {
+  notOwnedText,
+  ownedPokemonStatus,
+  OwnershipStatus,
+  toOwnedPokemonMap,
+} from "../App";
 
 function convertSeconds(s: number): string {
   var min = Math.floor(s / 60);
@@ -296,8 +301,6 @@ const Navbar = ({
                                 loggedInUserPokemonOwnershipStatus(
                                   friendPokemon
                                 );
-                              const userOwnershipStatus =
-                                userPokemonOwnershipStatus(userPokemon);
                               return (
                                 <li
                                   key={id}
@@ -350,30 +353,7 @@ const Navbar = ({
                                           key={userPokemon.id}
                                           pokemon={userPokemon}
                                           className="relative w-full"
-                                          imgClassName={`${
-                                            userOwnershipStatus === "owned" &&
-                                            "grayscale"
-                                          }`}
-                                        >
-                                          {userOwnershipStatus && (
-                                            <span className="top-[-15px] right-[-5px] absolute text-xs font-bold bg-white rounded-md px-2 py-0.5">
-                                              {userOwnershipStatus ===
-                                              "owned" ? (
-                                                <span className="text-gray-600">
-                                                  ALREADY OWNED!
-                                                </span>
-                                              ) : (
-                                                <span className="text-red-500">
-                                                  {
-                                                    notOwnedText[
-                                                      userOwnershipStatus
-                                                    ]
-                                                  }
-                                                </span>
-                                              )}
-                                            </span>
-                                          )}
-                                        </PokemonCard>
+                                        />
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-4">
@@ -403,11 +383,15 @@ const Navbar = ({
                       {tradeRequests.received.length > 0 ? (
                         <ul className="py-1" aria-labelledby="dropdown">
                           {tradeRequests.received.map(
-                            ({ id, user, userPokemon, friendPokemon }) => {
+                            ({
+                              id,
+                              user,
+                              userPokemon,
+                              friend,
+                              friendPokemon,
+                            }) => {
                               const loggedInUserOwnershipStatus =
                                 loggedInUserPokemonOwnershipStatus(userPokemon);
-                              const userOwnershipStatus =
-                                userPokemonOwnershipStatus(friendPokemon);
                               return (
                                 <li
                                   key={id}
@@ -460,30 +444,7 @@ const Navbar = ({
                                           key={friendPokemon.id}
                                           pokemon={friendPokemon}
                                           className="relative w-full"
-                                          imgClassName={`${
-                                            userOwnershipStatus === "owned" &&
-                                            "grayscale"
-                                          }`}
-                                        >
-                                          {userOwnershipStatus && (
-                                            <span className="top-[-15px] right-[-5px] absolute text-xs font-bold bg-white rounded-md px-2 py-0.5">
-                                              {userOwnershipStatus ===
-                                              "owned" ? (
-                                                <span className="text-gray-600">
-                                                  ALREADY OWNED!
-                                                </span>
-                                              ) : (
-                                                <span className="text-red-500">
-                                                  {
-                                                    notOwnedText[
-                                                      userOwnershipStatus
-                                                    ]
-                                                  }
-                                                </span>
-                                              )}
-                                            </span>
-                                          )}
-                                        </PokemonCard>
+                                        />
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-4">

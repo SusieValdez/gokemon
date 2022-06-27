@@ -25,7 +25,7 @@ export type UserOwnedPokemon = Record<
 
 export type OwnedPokemonMap = Record<number, UserOwnedPokemon>;
 
-const toOwnedPokemonMap = (ownedPokemon: OwnedPokemon[]) =>
+export const toOwnedPokemonMap = (ownedPokemon: OwnedPokemon[]) =>
   ownedPokemon.reduce(
     (acc, p) =>
       produce(acc, (draft) => {
@@ -74,7 +74,7 @@ export const notOwnedText: Record<Exclude<OwnershipStatus, "owned">, string> = {
   "dont-own-regular": "NEW REGULAR!",
 };
 
-const ownedPokemonStatus = (
+export const ownedPokemonStatus = (
   p: OwnedPokemon,
   ownedPokemonMap: OwnedPokemonMap
 ): OwnershipStatus => {
