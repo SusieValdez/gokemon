@@ -35,6 +35,7 @@ type NavbarProps = {
   setSelectModalOpen: (open: boolean) => void;
   getUserData: () => void;
   loggedInUserPokemonOwnershipStatus: (p: OwnedPokemon) => OwnershipStatus;
+  userPokemonOwnershipStatus: (p: OwnedPokemon) => OwnershipStatus;
 };
 
 type MenuType = "user" | "friends" | "notifications" | "trade-requests";
@@ -49,6 +50,7 @@ const Navbar = ({
   setSelectModalOpen,
   getUserData,
   loggedInUserPokemonOwnershipStatus,
+  userPokemonOwnershipStatus,
 }: NavbarProps) => {
   const [openMenu, setOpenMenu] = useState<MenuType | undefined>();
   const userMenu = useRef<HTMLDivElement>(null);
@@ -272,7 +274,7 @@ const Navbar = ({
                         tradesMenuRect.x -
                         (tradeRequests.received.length > 0 ||
                         tradeRequests.sent.length > 0
-                          ? 242
+                          ? 275
                           : 30)
                       }px, ${
                         tradesMenuRect.y + tradesMenuRect.height + 20
@@ -290,16 +292,18 @@ const Navbar = ({
                         <ul className="py-1" aria-labelledby="dropdown">
                           {tradeRequests.sent.map(
                             ({ id, friend, userPokemon, friendPokemon }) => {
-                              const ownershipStatus =
+                              const loggedInUserOwnershipStatus =
                                 loggedInUserPokemonOwnershipStatus(
                                   friendPokemon
                                 );
+                              const userOwnershipStatus =
+                                userPokemonOwnershipStatus(userPokemon);
                               return (
                                 <li
                                   key={id}
                                   className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
                                 >
-                                  <p>
+                                  <p className="mb-2">
                                     <img
                                       src={friend.profilePictureUrl}
                                       className="w-8 h-8 inline mr-2 rounded-full"
@@ -309,7 +313,7 @@ const Navbar = ({
 
                                   <div className="flex items-center">
                                     <div className="flex flex-col">
-                                      <div className="grid grid-cols-2 gap-2">
+                                      <div className="grid grid-cols-2 gap-2 mb-5">
                                         <span>Their</span>
                                         <span>For your</span>
                                       </div>
@@ -319,13 +323,26 @@ const Navbar = ({
                                           pokemon={friendPokemon}
                                           className="relative w-full"
                                           imgClassName={`${
-                                            ownershipStatus === "owned" &&
-                                            "grayscale"
+                                            loggedInUserOwnershipStatus ===
+                                              "owned" && "grayscale"
                                           }`}
                                         >
-                                          {ownershipStatus !== "owned" && (
-                                            <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
-                                              {notOwnedText[ownershipStatus]}
+                                          {loggedInUserOwnershipStatus && (
+                                            <span className="top-[-15px] right-[-5px] absolute text-xs font-bold bg-white rounded-md px-2 py-0.5">
+                                              {loggedInUserOwnershipStatus ===
+                                              "owned" ? (
+                                                <span className="text-gray-600">
+                                                  ALREADY OWNED!
+                                                </span>
+                                              ) : (
+                                                <span className="text-red-500">
+                                                  {
+                                                    notOwnedText[
+                                                      loggedInUserOwnershipStatus
+                                                    ]
+                                                  }
+                                                </span>
+                                              )}
                                             </span>
                                           )}
                                         </PokemonCard>
@@ -333,7 +350,30 @@ const Navbar = ({
                                           key={userPokemon.id}
                                           pokemon={userPokemon}
                                           className="relative w-full"
-                                        />
+                                          imgClassName={`${
+                                            userOwnershipStatus === "owned" &&
+                                            "grayscale"
+                                          }`}
+                                        >
+                                          {userOwnershipStatus && (
+                                            <span className="top-[-15px] right-[-5px] absolute text-xs font-bold bg-white rounded-md px-2 py-0.5">
+                                              {userOwnershipStatus ===
+                                              "owned" ? (
+                                                <span className="text-gray-600">
+                                                  ALREADY OWNED!
+                                                </span>
+                                              ) : (
+                                                <span className="text-red-500">
+                                                  {
+                                                    notOwnedText[
+                                                      userOwnershipStatus
+                                                    ]
+                                                  }
+                                                </span>
+                                              )}
+                                            </span>
+                                          )}
+                                        </PokemonCard>
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-4">
@@ -364,14 +404,16 @@ const Navbar = ({
                         <ul className="py-1" aria-labelledby="dropdown">
                           {tradeRequests.received.map(
                             ({ id, user, userPokemon, friendPokemon }) => {
-                              const ownershipStatus =
+                              const loggedInUserOwnershipStatus =
                                 loggedInUserPokemonOwnershipStatus(userPokemon);
+                              const userOwnershipStatus =
+                                userPokemonOwnershipStatus(friendPokemon);
                               return (
                                 <li
                                   key={id}
                                   className="block py-2 px-4 text-sm hover:bg-gray-600 text-gray-200 hover:text-white"
                                 >
-                                  <p>
+                                  <p className="mb-2">
                                     <img
                                       src={user.profilePictureUrl}
                                       className="w-8 h-8 inline mr-2 rounded-full"
@@ -381,7 +423,7 @@ const Navbar = ({
 
                                   <div className="flex items-center">
                                     <div className="flex flex-col">
-                                      <div className="grid grid-cols-2 gap-2">
+                                      <div className="grid grid-cols-2 gap-2 mb-5">
                                         <span>Their</span>
                                         <span>For your</span>
                                       </div>
@@ -391,13 +433,26 @@ const Navbar = ({
                                           pokemon={userPokemon}
                                           className="relative w-full"
                                           imgClassName={`${
-                                            ownershipStatus === "owned" &&
-                                            "grayscale"
+                                            loggedInUserOwnershipStatus ===
+                                              "owned" && "grayscale"
                                           }`}
                                         >
-                                          {ownershipStatus !== "owned" && (
-                                            <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
-                                              {notOwnedText[ownershipStatus]}
+                                          {loggedInUserOwnershipStatus && (
+                                            <span className="top-[-15px] right-[-5px] absolute text-xs font-bold bg-white rounded-md px-2 py-0.5">
+                                              {loggedInUserOwnershipStatus ===
+                                              "owned" ? (
+                                                <span className="text-gray-600">
+                                                  ALREADY OWNED!
+                                                </span>
+                                              ) : (
+                                                <span className="text-red-500">
+                                                  {
+                                                    notOwnedText[
+                                                      loggedInUserOwnershipStatus
+                                                    ]
+                                                  }
+                                                </span>
+                                              )}
                                             </span>
                                           )}
                                         </PokemonCard>
@@ -405,7 +460,30 @@ const Navbar = ({
                                           key={friendPokemon.id}
                                           pokemon={friendPokemon}
                                           className="relative w-full"
-                                        />
+                                          imgClassName={`${
+                                            userOwnershipStatus === "owned" &&
+                                            "grayscale"
+                                          }`}
+                                        >
+                                          {userOwnershipStatus && (
+                                            <span className="top-[-15px] right-[-5px] absolute text-xs font-bold bg-white rounded-md px-2 py-0.5">
+                                              {userOwnershipStatus ===
+                                              "owned" ? (
+                                                <span className="text-gray-600">
+                                                  ALREADY OWNED!
+                                                </span>
+                                              ) : (
+                                                <span className="text-red-500">
+                                                  {
+                                                    notOwnedText[
+                                                      userOwnershipStatus
+                                                    ]
+                                                  }
+                                                </span>
+                                              )}
+                                            </span>
+                                          )}
+                                        </PokemonCard>
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-4">
