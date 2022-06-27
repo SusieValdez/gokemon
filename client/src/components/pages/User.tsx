@@ -564,10 +564,28 @@ function UserPage({
                 ignoreCase: true,
                 ignoreAccents: true,
                 matchFrom: "any",
-                stringify: (option) =>
-                  (option.data.value.isShiny ? "Shiny " : "") +
-                  option.data.value.pokemon.forms[option.data.value.formIndex]
-                    .name,
+                stringify: (option) => {
+                  const userOwnershipStatus = userPokemonOwnershipStatus(
+                    option.data.value
+                  );
+                  return (
+                    `${option.data.value.pokemon.id} ` +
+                    (option.data.value.isShiny ? "shiny " : "") +
+                    (option.data.value.pokemon.isLegendary
+                      ? "legendary "
+                      : "") +
+                    (option.data.value.pokemon.isMythical ? "mythical " : "") +
+                    `${
+                      userOwnershipStatus
+                        ? userOwnershipStatus === "owned"
+                          ? "ALREADY OWNED"
+                          : notOwnedText[userOwnershipStatus]
+                        : ""
+                    } ` +
+                    option.data.value.pokemon.forms[option.data.value.formIndex]
+                      .name
+                  );
+                },
                 trim: true,
               })}
               options={loggedInUser.ownedPokemon.map((p) => {
@@ -638,10 +656,27 @@ function UserPage({
                 ignoreCase: true,
                 ignoreAccents: true,
                 matchFrom: "any",
-                stringify: (option) =>
-                  (option.data.value.isShiny ? "Shiny " : "") +
-                  option.data.value.pokemon.forms[option.data.value.formIndex]
-                    .name,
+                stringify: (option) => {
+                  const loggedInUserOwnershipStatus =
+                    loggedInUserPokemonOwnershipStatus(option.data.value);
+                  return (
+                    `${option.data.value.pokemon.id} ` +
+                    (option.data.value.isShiny ? "shiny " : "") +
+                    (option.data.value.pokemon.isLegendary
+                      ? "legendary "
+                      : "") +
+                    (option.data.value.pokemon.isMythical ? "mythical " : "") +
+                    `${
+                      loggedInUserOwnershipStatus
+                        ? loggedInUserOwnershipStatus === "owned"
+                          ? "ALREADY OWNED"
+                          : notOwnedText[loggedInUserOwnershipStatus]
+                        : ""
+                    } ` +
+                    option.data.value.pokemon.forms[option.data.value.formIndex]
+                      .name
+                  );
+                },
                 trim: true,
               })}
               value={{
