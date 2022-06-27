@@ -867,7 +867,7 @@ function UserPage({
                   }
                 }
                 onClick={() => {
-                  if (userOwnedPokemons?.length === 1) {
+                  if (p.forms.length === 1 && userOwnedPokemons?.length === 1) {
                     if (canInteractWithUser) {
                       setWantedPokemon(userOwnedPokemon);
                     }
