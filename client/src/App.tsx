@@ -25,7 +25,7 @@ export type UserOwnedPokemon = Record<
 
 export type OwnedPokemonMap = Record<number, UserOwnedPokemon>;
 
-const toOwnedPokemonMap = (ownedPokemon: OwnedPokemon[]) =>
+export const toOwnedPokemonMap = (ownedPokemon: OwnedPokemon[]) =>
   ownedPokemon.reduce(
     (acc, p) =>
       produce(acc, (draft) => {
@@ -74,7 +74,7 @@ export const notOwnedText: Record<Exclude<OwnershipStatus, "owned">, string> = {
   "dont-own-regular": "NEW REGULAR!",
 };
 
-const ownedPokemonStatus = (
+export const ownedPokemonStatus = (
   p: OwnedPokemon,
   ownedPokemonMap: OwnedPokemonMap
 ): OwnershipStatus => {
@@ -262,6 +262,9 @@ function App() {
     }
     return true;
   };
+  const userPokemonOwnershipStatus = (p: OwnedPokemon): OwnershipStatus => {
+    return ownedPokemonStatus(p, userOwnedPokemonMap);
+  };
 
   const userOwnedPokemons = (userSession?.user?.ownedPokemon ?? []).reduce(
     (acc, p) => ({
@@ -289,6 +292,7 @@ function App() {
             loggedInUserPokemonOwnershipStatus={
               loggedInUserPokemonOwnershipStatus
             }
+            userPokemonOwnershipStatus={userPokemonOwnershipStatus}
           />
           <div className="p-4 mx-auto pt-20">
             <Routes>
@@ -304,6 +308,10 @@ function App() {
                       userOwnsPokemon={userOwnsPokemon}
                       getUserOwnedPokemon={getUserOwnedPokemon}
                       getUserData={getUserData}
+                      loggedInUserPokemonOwnershipStatus={
+                        loggedInUserPokemonOwnershipStatus
+                      }
+                      userPokemonOwnershipStatus={userPokemonOwnershipStatus}
                     />
                   ) : (
                     <HomePage />
@@ -344,9 +352,17 @@ function App() {
                           ownershipStatus === "owned" && "grayscale"
                         }`}
                       >
-                        {ownershipStatus !== "owned" && (
-                          <span className="top-[-15px] right-[-5px] absolute text-sm text-red-500 font-bold bg-white rounded-md px-2 py-0.5">
-                            {notOwnedText[ownershipStatus]}
+                        {ownershipStatus && (
+                          <span className="top-[-15px] right-[-5px] absolute text-xs font-bold bg-white rounded-md px-2 py-0.5">
+                            {ownershipStatus === "owned" ? (
+                              <span className="text-gray-600">
+                                ALREADY OWNED!
+                              </span>
+                            ) : (
+                              <span className="text-red-500">
+                                {notOwnedText[ownershipStatus]}
+                              </span>
+                            )}
                           </span>
                         )}
                       </PokemonCard>

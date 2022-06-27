@@ -16,6 +16,7 @@ import { FriendRequest, OwnedPokemon, Pokemon, User } from "../../models";
 import PokemonCard from "../PokemonCard";
 import EyeIcon from "../../assets/eye-solid.svg";
 import { matchesQuery } from "../../utils";
+import { notOwnedText, OwnershipStatus } from "../../App";
 
 type UserProps = {
   loggedInUser: User | null;
@@ -25,6 +26,8 @@ type UserProps = {
   userOwnsPokemon: (p: Pokemon, formIndex?: number) => boolean;
   getUserOwnedPokemon: (id: number) => OwnedPokemon[] | undefined;
   getUserData: () => void;
+  loggedInUserPokemonOwnershipStatus: (p: OwnedPokemon) => OwnershipStatus;
+  userPokemonOwnershipStatus: (p: OwnedPokemon) => OwnershipStatus;
 };
 
 type OwnedPokemonFilter = "all" | "owned" | "unowned";
@@ -161,6 +164,8 @@ function UserPage({
   userOwnsPokemon,
   getUserOwnedPokemon,
   getUserData,
+  loggedInUserPokemonOwnershipStatus,
+  userPokemonOwnershipStatus,
 }: UserProps) {
   const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
 
@@ -263,6 +268,11 @@ function UserPage({
   );
 
   const friend = loggedInUser?.friends.find(({ id }) => id === user.id);
+
+  const loggedInUserOwnershipStatus =
+    wantedPokemon && loggedInUserPokemonOwnershipStatus(wantedPokemon);
+  const userOwnershipStatus =
+    offeredPokemon && userPokemonOwnershipStatus(offeredPokemon);
 
   return (
     <div>
@@ -538,103 +548,241 @@ function UserPage({
             </span>
           </div>
 
-          <div className="flex gap-2 justify-between">
-            <div className="flex-1">
-              <label className="block mb-2 text-sm font-medium ">
-                {loggedInUser.username}'s Pokemon
-              </label>
-              <Select
-                filterOption={createFilter({
-                  ignoreCase: true,
-                  ignoreAccents: true,
-                  matchFrom: "any",
-                  stringify: (option) =>
-                    (option.data.value.isShiny ? "Shiny " : "") +
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block mb-2 text-sm font-medium ">
+              {loggedInUser.username}'s Pokemon
+            </label>
+            <label className="block mb-2 text-sm font-medium ">
+              {user.username}'s Pokemon
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Select
+              className="mb-5"
+              filterOption={createFilter({
+                ignoreCase: true,
+                ignoreAccents: true,
+                matchFrom: "any",
+                stringify: (option) => {
+                  const userOwnershipStatus = userPokemonOwnershipStatus(
+                    option.data.value
+                  );
+                  return (
+                    `${option.data.value.pokemon.id} ` +
+                    (option.data.value.isShiny ? "shiny " : "") +
+                    (option.data.value.pokemon.isLegendary
+                      ? "legendary "
+                      : "") +
+                    (option.data.value.pokemon.isMythical ? "mythical " : "") +
+                    `${
+                      userOwnershipStatus
+                        ? userOwnershipStatus === "owned"
+                          ? "ALREADY OWNED"
+                          : notOwnedText[userOwnershipStatus]
+                        : ""
+                    } ` +
                     option.data.value.pokemon.forms[option.data.value.formIndex]
-                      .name,
-                  trim: true,
-                })}
-                options={loggedInUser.ownedPokemon.map((p) => ({
+                      .name
+                  );
+                },
+                trim: true,
+              })}
+              options={loggedInUser.ownedPokemon.map((p) => {
+                const userOwnershipStatus = userPokemonOwnershipStatus(p);
+                return {
                   value: p,
                   label: (
                     <div className="flex items-center">
                       <img src={spriteUrl(p)} />
-                      {p.isShiny ? "Shiny " : ""}
-                      {p.pokemon.forms[p.formIndex].name}
+                      <div className="flex flex-col">
+                        <div className="text-sm font-bold">
+                          {userOwnershipStatus &&
+                            (userOwnershipStatus === "owned" ? (
+                              <span className="text-gray-600">
+                                ALREADY OWNED!
+                              </span>
+                            ) : (
+                              <span className="text-red-500">
+                                {notOwnedText[userOwnershipStatus]}
+                              </span>
+                            ))}
+                        </div>
+                        <div>
+                          {p.isShiny ? "Shiny " : ""}
+                          {p.pokemon.forms[p.formIndex].name}
+                        </div>
+                      </div>
                     </div>
                   ),
-                }))}
-                value={{
-                  value: offeredPokemon,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={spriteUrl(offeredPokemon)} />
-                      {offeredPokemon.isShiny ? "Shiny " : ""}
-                      {
-                        offeredPokemon.pokemon.forms[offeredPokemon.formIndex]
-                          .name
-                      }
+                };
+              })}
+              value={{
+                value: offeredPokemon,
+                label: (
+                  <div className="flex items-center">
+                    <img src={spriteUrl(offeredPokemon)} />
+                    <div className="flex flex-col">
+                      <div className="text-sm font-bold">
+                        {userOwnershipStatus &&
+                          (userOwnershipStatus === "owned" ? (
+                            <span className="text-gray-600">
+                              ALREADY OWNED!
+                            </span>
+                          ) : (
+                            <span className="text-red-500">
+                              {notOwnedText[userOwnershipStatus]}
+                            </span>
+                          ))}
+                      </div>
+                      <div>
+                        {offeredPokemon.isShiny ? "Shiny " : ""}
+                        {
+                          offeredPokemon.pokemon.forms[offeredPokemon.formIndex]
+                            .name
+                        }
+                      </div>
                     </div>
-                  ),
-                }}
-                onChange={(e) => {
-                  e?.value && setOfferedPokemon(e.value);
-                }}
-              />
-              <img
-                src={spriteUrl(offeredPokemon)}
-                className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
-                alt="user pokemon"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block mb-2 text-sm font-medium ">
-                {user.username}'s Pokemon
-              </label>
-              <Select
-                filterOption={createFilter({
-                  ignoreCase: true,
-                  ignoreAccents: true,
-                  matchFrom: "any",
-                  stringify: (option) =>
-                    (option.data.value.isShiny ? "Shiny " : "") +
+                  </div>
+                ),
+              }}
+              onChange={(e) => {
+                e?.value && setOfferedPokemon(e.value);
+              }}
+            />
+            <Select
+              className="mb-5"
+              filterOption={createFilter({
+                ignoreCase: true,
+                ignoreAccents: true,
+                matchFrom: "any",
+                stringify: (option) => {
+                  const loggedInUserOwnershipStatus =
+                    loggedInUserPokemonOwnershipStatus(option.data.value);
+                  return (
+                    `${option.data.value.pokemon.id} ` +
+                    (option.data.value.isShiny ? "shiny " : "") +
+                    (option.data.value.pokemon.isLegendary
+                      ? "legendary "
+                      : "") +
+                    (option.data.value.pokemon.isMythical ? "mythical " : "") +
+                    `${
+                      loggedInUserOwnershipStatus
+                        ? loggedInUserOwnershipStatus === "owned"
+                          ? "ALREADY OWNED"
+                          : notOwnedText[loggedInUserOwnershipStatus]
+                        : ""
+                    } ` +
                     option.data.value.pokemon.forms[option.data.value.formIndex]
-                      .name,
-                  trim: true,
-                })}
-                value={{
-                  value: wantedPokemon,
-                  label: (
-                    <div className="flex items-center">
-                      <img src={spriteUrl(wantedPokemon)} />
-                      {wantedPokemon.isShiny ? "Shiny " : ""}
-                      {
-                        wantedPokemon.pokemon.forms[wantedPokemon.formIndex]
-                          .name
-                      }
+                      .name
+                  );
+                },
+                trim: true,
+              })}
+              value={{
+                value: wantedPokemon,
+                label: (
+                  <div className="flex items-center">
+                    <img src={spriteUrl(wantedPokemon)} />
+                    <div className="flex flex-col">
+                      <div className="text-sm font-bold">
+                        {loggedInUserOwnershipStatus &&
+                          (loggedInUserOwnershipStatus === "owned" ? (
+                            <span className="text-gray-600">
+                              ALREADY OWNED!
+                            </span>
+                          ) : (
+                            <span className="text-red-500">
+                              {notOwnedText[loggedInUserOwnershipStatus]}
+                            </span>
+                          ))}
+                      </div>
+                      <div>
+                        {wantedPokemon.isShiny ? "Shiny " : ""}
+                        {
+                          wantedPokemon.pokemon.forms[wantedPokemon.formIndex]
+                            .name
+                        }
+                      </div>
                     </div>
-                  ),
-                }}
-                options={user.ownedPokemon.map((p) => ({
+                  </div>
+                ),
+              }}
+              options={user.ownedPokemon.map((p) => {
+                const loggedInUserOwnershipStatus =
+                  loggedInUserPokemonOwnershipStatus(p);
+                return {
                   value: p,
                   label: (
                     <div className="flex items-center">
                       <img src={spriteUrl(p)} />
-                      {p.isShiny ? "Shiny " : ""}
-                      {p.pokemon.forms[p.formIndex].name}
+                      <div className="flex flex-col">
+                        <div className="text-sm font-bold">
+                          {loggedInUserOwnershipStatus &&
+                            (loggedInUserOwnershipStatus === "owned" ? (
+                              <span className="text-gray-600">
+                                ALREADY OWNED!
+                              </span>
+                            ) : (
+                              <span className="text-red-500">
+                                {notOwnedText[loggedInUserOwnershipStatus]}
+                              </span>
+                            ))}
+                        </div>
+                        <div>
+                          {p.isShiny ? "Shiny " : ""}
+                          {p.pokemon.forms[p.formIndex].name}
+                        </div>
+                      </div>
                     </div>
                   ),
-                }))}
-                onChange={(e) => {
-                  e?.value && setWantedPokemon(e.value);
-                }}
-              />
-              <img
-                src={spriteUrl(wantedPokemon)}
-                className="m-auto w-full max-w-[50vh] [image-rendering:pixelated] rounded-md"
-                alt="user pokemon"
-              />
-            </div>
+                };
+              })}
+              onChange={(e) => {
+                e?.value && setWantedPokemon(e.value);
+              }}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mb-5">
+            <PokemonCard
+              pokemon={offeredPokemon}
+              className="relative w-full max-h-[50vh]"
+              imgClassName={`max-w-[40vh] m-auto ${
+                userOwnershipStatus === "owned" && "grayscale"
+              }`}
+            >
+              {userOwnershipStatus && (
+                <span className="top-[-15px] right-[-5px] absolute text-sm font-bold bg-white rounded-md px-2 py-0.5">
+                  {userOwnershipStatus === "owned" ? (
+                    <span className="text-gray-600">ALREADY OWNED!</span>
+                  ) : (
+                    <span className="text-red-500">
+                      {notOwnedText[userOwnershipStatus]}
+                    </span>
+                  )}
+                </span>
+              )}
+            </PokemonCard>
+            <PokemonCard
+              pokemon={wantedPokemon}
+              className="relative w-full max-h-[50vh]"
+              imgClassName={`max-w-[40vh] m-auto ${
+                loggedInUserOwnershipStatus === "owned" && "grayscale"
+              }`}
+            >
+              {loggedInUserOwnershipStatus && (
+                <span className="top-[-15px] right-[-5px] absolute text-sm font-bold bg-white rounded-md px-2 py-0.5">
+                  {loggedInUserOwnershipStatus === "owned" ? (
+                    <span className="text-gray-600">ALREADY OWNED!</span>
+                  ) : (
+                    <span className="text-red-500">
+                      {notOwnedText[loggedInUserOwnershipStatus]}
+                    </span>
+                  )}
+                </span>
+              )}
+            </PokemonCard>
           </div>
 
           <div className="flex justify-center">
@@ -666,53 +814,60 @@ function UserPage({
           </div>
           <div className="bg-white p-6 rounded-md grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 overflow-scroll max-h-[75vh]">
             {selectedSpecies.forms.map((form, i) => {
-              const userOwnedPokemons = getUserOwnedPokemon(selectedSpecies.id);
-              const userOwnedPokemon =
-                userOwnedPokemons &&
-                userOwnedPokemons.find(({ formIndex }) => formIndex === i);
+              const pokemonFormMultiples = getUserOwnedPokemon(
+                selectedSpecies.id
+              )?.filter(({ formIndex }) => formIndex === i);
               const preferredFormIndex =
                 user.preferredForms && user.preferredForms[selectedSpecies.id];
+              if (pokemonFormMultiples && pokemonFormMultiples.length > 0) {
+                return pokemonFormMultiples.map((o) => (
+                  <PokemonCard
+                    key={o.id}
+                    pokemon={o}
+                    onClick={() => {
+                      if (canInteractWithUser) {
+                        setWantedPokemon(o);
+                      }
+                    }}
+                    className="relative"
+                  >
+                    {loggedInUser?.id === user.id && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onClickUpdatePreferredFormButton(
+                            selectedSpecies.id,
+                            i
+                          )
+                        }
+                        className="hover:brightness-75"
+                      >
+                        <img
+                          className="w-6 h-6 mt-1 md:w-8 md:h-8"
+                          style={{
+                            filter:
+                              preferredFormIndex === i ? "" : "invert(100%)",
+                          }}
+                          src={EyeIcon}
+                          alt="trade request icon"
+                        />
+                      </button>
+                    )}
+                  </PokemonCard>
+                ));
+              }
               return (
                 <PokemonCard
                   key={form.id}
-                  pokemon={
-                    userOwnedPokemon ?? {
-                      id: 0,
-                      pokemon: selectedSpecies,
-                      formIndex: i,
-                      isShiny: false,
-                    }
-                  }
-                  onClick={() => {
-                    if (canInteractWithUser) {
-                      setWantedPokemon(userOwnedPokemon);
-                    }
+                  pokemon={{
+                    id: 0,
+                    pokemon: selectedSpecies,
+                    formIndex: i,
+                    isShiny: false,
                   }}
                   className="relative"
-                  imgClassName={`${
-                    !userOwnsPokemon(selectedSpecies, i) && "brightness-0"
-                  }`}
-                >
-                  {userOwnedPokemon && loggedInUser?.id === user.id && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onClickUpdatePreferredFormButton(selectedSpecies.id, i)
-                      }
-                      className="hover:brightness-75"
-                    >
-                      <img
-                        className="w-6 h-6 mt-1 md:w-8 md:h-8"
-                        style={{
-                          filter:
-                            preferredFormIndex === i ? "" : "invert(100%)",
-                        }}
-                        src={EyeIcon}
-                        alt="trade request icon"
-                      />
-                    </button>
-                  )}
-                </PokemonCard>
+                  imgClassName={"brightness-0"}
+                />
               );
             })}
           </div>
@@ -747,7 +902,7 @@ function UserPage({
                   }
                 }
                 onClick={() => {
-                  if (p.forms.length === 1) {
+                  if (p.forms.length === 1 && userOwnedPokemons?.length === 1) {
                     if (canInteractWithUser) {
                       setWantedPokemon(userOwnedPokemon);
                     }
