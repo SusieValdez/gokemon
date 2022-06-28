@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -20,11 +19,10 @@ import (
 	"gorm.io/gorm"
 
 	"susie.mx/gokemon/discord"
+	"susie.mx/gokemon/discordbot"
 	"susie.mx/gokemon/models"
 	"susie.mx/gokemon/server"
 )
-
-const addCommands = false
 
 func main() {
 	err := godotenv.Load()
@@ -60,78 +58,8 @@ func main() {
 		RedirectURI:  discordRedirectUri,
 	}
 
-	discordBotSession, err := discordgo.New("Bot " + discordBotAuthToken)
-	if err != nil {
-		log.Fatalf("failed to create discord session: %v", err)
-	}
-
-	discordBotSession.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		log.Printf("Logged in as: %s#%s", s.State.User.Username, s.State.User.Discriminator)
-	})
-
-	commands := []*discordgo.ApplicationCommand{
-		{
-			Name:        "pending-pokemon",
-			Description: "Fetch Pending Pokemon",
-		},
-	}
-
-	commandHandlers := map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
-		"pending-pokemon": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			var user models.User
-			db.
-				Preload("PendingPokemon.Pokemon.Forms.Sprites").
-				Preload("PendingPokemon.Pokemon.Forms.Types").
-				Preload("PendingPokemon.Pokemon.Forms").
-				Preload("PendingPokemon.Pokemon").
-				Preload("PendingPokemon").
-				First(&user, "discord_id = ?", i.Member.User.ID)
-			var content string
-			if len(user.PendingPokemon) == 0 {
-				content = fmt.Sprintf("Your next pending Pokemon arrives at %d\n", user.NextPokemonSelectionTimestamp)
-			} else {
-				for _, p := range user.PendingPokemon {
-					content += p.Pokemon.Name + "\n"
-				}
-			}
-			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: content,
-				},
-			})
-			if err != nil {
-				log.Printf("failed to respond to pending-pokemon: %v", err)
-			}
-		},
-	}
-
-	discordBotSession.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
-			h(s, i)
-		}
-	})
-
-	go func() {
-		err := discordBotSession.Open()
-		if err != nil {
-			log.Fatalf("failed to open discord session: %v", err)
-		}
-		defer discordBotSession.Close()
-
-		if addCommands {
-			for _, guildID := range discordBotGuilds {
-				log.Printf("Adding commands for Guild: %s\n", guildID)
-				for _, command := range commands {
-					_, err := discordBotSession.ApplicationCommandCreate(discordBotSession.State.User.ID, guildID, command)
-					if err != nil {
-						log.Fatalf("failed to add '%s' command: %v", command.Name, err)
-					}
-				}
-			}
-			log.Println("Finished adding commands!")
-		}
-	}()
+	discordBot := discordbot.New(discordBotAuthToken, discordBotGuilds, db)
+	go discordBot.Start()
 
 	if err := db.AutoMigrate(&models.OwnedPokemon{}); err != nil {
 		log.Fatalln(err)
