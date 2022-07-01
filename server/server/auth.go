@@ -15,11 +15,11 @@ func (s *Server) DiscordLogin(c *gin.Context) {
 	authCode := c.Request.URL.Query().Get("code")
 	accessToken := s.DiscordClient.GetAccessToken(authCode).AccessToken
 	if accessToken == "" {
-		log.Fatalf("fetching access token failed")
+		log.Panicf("fetching access token failed")
 	}
 	discordUser := s.DiscordClient.GetUser("@me", accessToken)
 	if discordUser.ID == "" {
-		log.Fatalf("fetching discord user failed")
+		log.Panicf("fetching discord user failed")
 	}
 	username := discordUser.Username
 	var user models.User
@@ -43,7 +43,7 @@ func (s *Server) DiscordLogin(c *gin.Context) {
 	session.Set("username", username)
 	err := session.Save()
 	if err != nil {
-		log.Fatalf("saving access token to session failed: %s", err)
+		log.Panicf("saving access token to session failed: %s", err)
 	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("%s/%s", s.ClientBaseURL, username))
 }

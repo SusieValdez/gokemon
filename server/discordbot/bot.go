@@ -17,7 +17,7 @@ type Bot struct {
 func New(authToken string, guildIDs []string, db *gorm.DB) *Bot {
 	session, err := discordgo.New("Bot " + authToken)
 	if err != nil {
-		log.Fatalf("failed to create discord session: %v", err)
+		log.Panicf("failed to create discord session: %v", err)
 	}
 	b := &Bot{
 		session:  session,
@@ -38,7 +38,7 @@ func New(authToken string, guildIDs []string, db *gorm.DB) *Bot {
 func (b *Bot) Start() {
 	err := b.session.Open()
 	if err != nil {
-		log.Fatalf("failed to open discord session: %v", err)
+		log.Panicf("failed to open discord session: %v", err)
 	}
 	defer b.session.Close()
 
@@ -50,7 +50,7 @@ func (b *Bot) Start() {
 		for _, command := range commands.Commands {
 			_, err := b.session.ApplicationCommandCreate(b.session.State.User.ID, guildID, command.Information)
 			if err != nil {
-				log.Fatalf("failed to add '%s' command: %v", command.Information.Name, err)
+				log.Panicf("failed to add '%s' command: %v", command.Information.Name, err)
 			}
 		}
 	}

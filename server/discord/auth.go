@@ -29,25 +29,24 @@ func (c *Client) GetAccessToken(code string) AccessTokenResponse {
 		strings.NewReader(values.Encode()),
 	)
 	if err != nil {
-		log.Fatalf("creating access token request failed: %s", err)
+		log.Panicf("creating access token request failed: %s", err)
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		log.Fatalf("requesting access token failed: %s", err)
+		log.Panicf("requesting access token failed: %s", err)
 	}
 	bs, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("reading response bytes failed: %s", err)
+		log.Panicf("reading response bytes failed: %s", err)
 	}
 	if resp.StatusCode != 200 {
-		log.Printf("requesting access token failed: %s", string(bs))
-		return AccessTokenResponse{}
+		log.Panicf("requesting access token failed: %s", string(bs))
 	}
 	var response AccessTokenResponse
 	err = json.Unmarshal(bs, &response)
 	if err != nil {
-		log.Fatalf("decoding access token response failed: %s", err)
+		log.Panicf("decoding access token response failed: %s", err)
 	}
 	return response
 }
