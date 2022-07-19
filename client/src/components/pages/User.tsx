@@ -285,7 +285,8 @@ function UserPage({
           <h2 className="text-lg font-semibold md:text-3xl flex flex-col">
             {user.username}'s Pokemon
             <span className="text-sm font-light">
-              ({user.ownedPokemon.length} / {allPokemon.length}){" "}
+              ({allPokemon.filter((p) => userOwnsPokemon(p)).length} /{" "}
+              {allPokemon.length}){" "}
             </span>
           </h2>
         </div>
